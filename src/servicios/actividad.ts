@@ -29,3 +29,23 @@ export function crearActividad(datos: DatosNuevaActividad, numero: number): Acti
 export function ordenarActividadReciente(actividad: readonly Actividad[]): Actividad[] {
   return [...actividad].sort((a, b) => b.fechaHora.localeCompare(a.fechaHora) || b.codigo.localeCompare(a.codigo))
 }
+
+export function registrarActividades<T extends { actividad: Actividad[]; configuracion: { contadores: Record<string, number> } }>(
+  datos: T,
+  entradas: readonly DatosNuevaActividad[],
+): T {
+  if (entradas.length === 0) return datos
+  let contador = datos.configuracion.contadores[PREFIJOS.actividad] ?? 0
+  const nuevas = entradas.map((entrada) => {
+    contador += 1
+    return crearActividad(entrada, contador)
+  })
+  return {
+    ...datos,
+    actividad: ordenarActividadReciente([...nuevas, ...datos.actividad]),
+    configuracion: {
+      ...datos.configuracion,
+      contadores: { ...datos.configuracion.contadores, [PREFIJOS.actividad]: contador },
+    },
+  }
+}
