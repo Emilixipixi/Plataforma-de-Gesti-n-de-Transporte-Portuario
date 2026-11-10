@@ -26,7 +26,7 @@ export const NOMBRE_DESCRIPTIVO = 'Gestión de Transporte Portuario'
 export const SUBTITULO_SISTEMA = 'Importaciones · Exportaciones · Operaciones · Documentación'
 
 export const CLAVE_ALMACENAMIENTO = 'portflow:v1'
-export const VERSION_ESQUEMA = 1
+export const VERSION_ESQUEMA = 3
 export const DIAS_ALERTA_VENCIMIENTO_PREDETERMINADOS = 7
 
 export const ZONA_HORARIA = 'America/Guayaquil'

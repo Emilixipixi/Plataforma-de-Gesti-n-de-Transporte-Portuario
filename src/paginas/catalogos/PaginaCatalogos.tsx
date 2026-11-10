@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ComponentType } from 'react'
 import { Link, NavLink, useParams } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Building2, Flag, MapPin, Package, TriangleAlert, Truck, UserRound, Warehouse, type LucideProps } from 'lucide-react'
 import {
   DISPONIBILIDADES_CHOFER,
   DISPONIBILIDADES_UNIDAD,
@@ -54,6 +54,12 @@ function Uso({ cantidad, singular, plural }: { cantidad: number; singular: strin
   return <span className="tabular-nums text-texto-secundario whitespace-nowrap">{cantidad} {cantidad === 1 ? singular : plural}</span>
 }
 
+function masUsado(lista: readonly { codigo: string; nombre: string }[], usos: (codigo: string) => number): string {
+  const ordenados = [...lista].sort((a, b) => usos(b.codigo) - usos(a.codigo))
+  const primero = ordenados[0]
+  return primero && usos(primero.codigo) > 0 ? primero.nombre : 'Sin uso'
+}
+
 function opcionesTransportistas(datos: DatosApp) {
   return datos.transportistas.map((t) => ({ valor: t.codigo, etiqueta: t.razonSocial }))
 }
@@ -64,6 +70,12 @@ function CatalogoTransportistas() {
     <PanelCatalogo
       coleccion="transportistas"
       titulo="Transportistas"
+      icono={ICONOS_CATALOGO.transportistas}
+      indicadores={[
+        { etiqueta: 'Choferes', valor: datos.choferes.length, tono: 'info' },
+        { etiqueta: 'Unidades', valor: datos.unidades.length, tono: 'info' },
+        { etiqueta: 'Con viajes abiertos', valor: datos.transportistas.filter((t) => viajesAbiertosCon(datos, (v) => v.transportistaCodigo === t.codigo).length > 0).length, tono: 'pendiente' },
+      ]}
       singular="transportista"
       descripcion="Empresas de transporte con sus choferes y unidades."
       Formulario={FormularioTransportista}
@@ -87,6 +99,8 @@ function CatalogoChoferes() {
     <PanelCatalogo
       coleccion="choferes"
       titulo="Choferes"
+      icono={ICONOS_CATALOGO.choferes}
+      indicadores={DISPONIBILIDADES_CHOFER.map((d) => ({ etiqueta: ETIQUETAS_DISPONIBILIDAD_CHOFER[d], valor: datos.choferes.filter((c) => c.disponibilidad === d).length, tono: TONOS_DISPONIBILIDAD_CHOFER[d] }))}
       singular="chofer"
       descripcion="La disponibilidad es ilustrativa; el aviso de solapamiento se calcula con la programación de los viajes."
       Formulario={FormularioChofer}
@@ -114,6 +128,8 @@ function CatalogoUnidades() {
     <PanelCatalogo
       coleccion="unidades"
       titulo="Unidades"
+      icono={ICONOS_CATALOGO.unidades}
+      indicadores={DISPONIBILIDADES_UNIDAD.map((d) => ({ etiqueta: ETIQUETAS_DISPONIBILIDAD_UNIDAD[d], valor: datos.unidades.filter((u) => u.disponibilidad === d).length, tono: TONOS_DISPONIBILIDAD_UNIDAD[d] }))}
       singular="unidad"
       femenino
       descripcion="Vehículos por transportista. La placa se usa en la búsqueda global y en la guía de remisión."
@@ -142,6 +158,8 @@ function CatalogoLugares() {
     <PanelCatalogo
       coleccion="lugares"
       titulo="Lugares"
+      icono={ICONOS_CATALOGO.lugares}
+      indicadores={TIPOS_LUGAR.map((t) => ({ etiqueta: ETIQUETAS_TIPO_LUGAR[t], valor: datos.lugares.filter((l) => l.tipo === t).length, tono: 'info' as const })).filter((i) => i.valor > 0).slice(0, 3)}
       singular="lugar"
       descripcion="Puertos, depósitos, plantas e instalaciones de clientes que forman la ruta de puntos operativos."
       Formulario={FormularioLugar}
@@ -166,6 +184,11 @@ function CatalogoTiposCarga() {
     <PanelCatalogo
       coleccion="tiposCarga"
       titulo="Tipos de carga"
+      icono={ICONOS_CATALOGO['tipos-carga']}
+      indicadores={[
+        { etiqueta: 'Viajes clasificados', valor: datos.viajes.filter((v) => v.carga.categoriaCodigo).length, tono: 'info' },
+        { etiqueta: 'Más utilizado', valor: masUsado(datos.tiposCarga, usos) },
+      ]}
       singular="tipo de carga"
       descripcion="Clasificación de la mercadería que alimenta los formularios de solicitud y viaje."
       Formulario={FormularioTipoCarga}
@@ -182,7 +205,7 @@ function CatalogoTiposCarga() {
 function SecuenciasPorModalidad() {
   const { datos } = usarApp()
   return (
-    <Panel titulo="Secuencia de hitos por modalidad" descripcion="Define el orden del seguimiento y el hito requerido para el cierre (RN-03, RN-04, RN-05)." className="mb-5">
+    <Panel titulo="Secuencia de hitos por modalidad" descripcion="Define el orden del seguimiento y el hito requerido para el cierre (RN-03, RN-04, RN-05).">
       <div className="grid gap-4 lg:grid-cols-3">
         {MODALIDADES.map((modalidad) => (
           <div key={modalidad}>
@@ -203,10 +226,17 @@ function SecuenciasPorModalidad() {
 }
 
 function CatalogoTiposEvento() {
+  const { datos } = usarApp()
   return (
     <PanelCatalogo
       coleccion="tiposEvento"
       titulo="Tipos de evento e hitos"
+      icono={ICONOS_CATALOGO['tipos-evento']}
+      indicadores={[
+        { etiqueta: 'Hitos del sistema', valor: datos.tiposEvento.filter((t) => esHitoDelSistema(t.codigo)).length, tono: 'info' },
+        { etiqueta: 'Eventos adicionales', valor: datos.tiposEvento.filter((t) => !esHitoDelSistema(t.codigo)).length },
+        { etiqueta: 'Eventos registrados', valor: datos.eventos.length, tono: 'info' },
+      ]}
       singular="tipo de evento"
       descripcion="Hitos predefinidos por modalidad y eventos adicionales que pueden registrarse en la línea de tiempo."
       Formulario={FormularioTipoEvento}
@@ -231,6 +261,12 @@ function CatalogoTiposIncidencia() {
     <PanelCatalogo
       coleccion="tiposIncidencia"
       titulo="Tipos de incidencia"
+      icono={ICONOS_CATALOGO['tipos-incidencia']}
+      indicadores={[
+        { etiqueta: 'Incidencias registradas', valor: datos.incidencias.length, tono: 'info' },
+        { etiqueta: 'Abiertas', valor: datos.incidencias.filter((i) => i.estado === 'abierta').length, tono: 'peligro' },
+        { etiqueta: 'Más frecuente', valor: masUsado(datos.tiposIncidencia, usos) },
+      ]}
       singular="tipo de incidencia"
       descripcion="Categorías para registrar paradas, esperas, demoras, problemas y cambios de ruta."
       Formulario={FormularioTipoIncidencia}
@@ -253,6 +289,21 @@ const PANELES: Record<ClaveCatalogo, ComponentType> = {
   'tipos-evento': CatalogoTiposEvento,
   'tipos-incidencia': CatalogoTiposIncidencia,
 }
+
+const ICONOS_CATALOGO: Record<ClaveCatalogo, ComponentType<LucideProps>> = {
+  transportistas: Warehouse,
+  choferes: UserRound,
+  unidades: Truck,
+  lugares: MapPin,
+  'tipos-carga': Package,
+  'tipos-evento': Flag,
+  'tipos-incidencia': TriangleAlert,
+}
+
+const GRUPOS_CATALOGO: { titulo: string; claves: ClaveCatalogo[] }[] = [
+  { titulo: 'Recursos de transporte', claves: ['transportistas', 'choferes', 'unidades'] },
+  { titulo: 'Operación', claves: ['lugares', 'tipos-carga', 'tipos-evento', 'tipos-incidencia'] },
+]
 
 const COLECCION_POR_CLAVE = {
   transportistas: 'transportistas',
@@ -283,27 +334,50 @@ export default function PaginaCatalogos() {
   return (
     <>
       <EncabezadoPagina titulo="Catálogos" descripcion="Listas maestras que alimentan los formularios de solicitudes, viajes, seguimiento e incidencias." />
-      <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <nav ref={navegacion} aria-label="Catálogos" className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible -mx-1 px-1 pb-1 lg:pb-0">
-          {CATALOGOS.map((c) => {
-            const lista = datos[COLECCION_POR_CLAVE[c.clave]]
-            return (
-              <NavLink
-                key={c.clave}
-                to={`/catalogos/${c.clave}`}
-                className={({ isActive }) =>
-                  `flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm whitespace-nowrap ${isActive ? 'bg-superficie border border-borde text-texto font-medium' : 'text-texto-secundario hover:bg-superficie hover:text-texto border border-transparent'}`
-                }
-              >
-                {c.titulo}
-                <span className="text-xs tabular-nums text-texto-secundario">{lista.length}</span>
-              </NavLink>
-            )
-          })}
-          <Link to="/clientes" className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm whitespace-nowrap text-texto-secundario hover:bg-superficie hover:text-texto border border-transparent">
-            Clientes
-            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-          </Link>
+      <div className="grid gap-5 lg:grid-cols-[250px_minmax(0,1fr)] items-start">
+        <nav ref={navegacion} aria-label="Catálogos" className="bg-superficie border border-borde rounded-lg p-2 lg:sticky lg:top-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-x-2 gap-y-3">
+            {GRUPOS_CATALOGO.map((grupo) => (
+              <div key={grupo.titulo} className="col-span-2 sm:col-span-3 lg:col-span-1">
+                <p className="px-2 pt-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-texto-secundario">{grupo.titulo}</p>
+                <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
+                  {grupo.claves.map((clave) => {
+                    const c = CATALOGOS.find((x) => x.clave === clave)
+                    if (!c) return null
+                    const Icono = ICONOS_CATALOGO[clave]
+                    const lista = datos[COLECCION_POR_CLAVE[clave]]
+                    return (
+                      <li key={clave}>
+                        <NavLink
+                          to={`/catalogos/${clave}`}
+                          className={({ isActive }) =>
+                            `relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm ${isActive ? 'bg-fondo text-texto font-medium' : 'text-texto-secundario hover:bg-fondo hover:text-texto'}`
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              {isActive && <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-acento" aria-hidden="true" />}
+                              <Icono className={`size-4 shrink-0 ${isActive ? 'text-texto' : ''}`} aria-hidden="true" />
+                              <span className="flex-1 min-w-0 truncate">{c.titulo}</span>
+                              <span className="text-xs tabular-nums rounded bg-superficie border border-borde px-1.5 text-texto-secundario">{lista.length}</span>
+                            </>
+                          )}
+                        </NavLink>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+            <div className="col-span-2 sm:col-span-3 lg:col-span-1 border-t border-borde pt-2">
+              <Link to="/clientes" className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-texto-secundario hover:bg-fondo hover:text-texto">
+                <Building2 className="size-4 shrink-0" aria-hidden="true" />
+                <span className="flex-1">Clientes</span>
+                <span className="text-xs tabular-nums">{datos.clientes.length}</span>
+                <ArrowUpRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
         </nav>
         <div className="min-w-0">
           <PanelActivo key={catalogo} />

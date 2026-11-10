@@ -180,6 +180,7 @@ export interface Solicitud {
   destinoCodigo: string
   fechaRequerida: string
   indicacionesCliente: string
+  valorAproximado?: number
   observaciones: string
   estado: EstadoSolicitud
   motivoRechazo?: string

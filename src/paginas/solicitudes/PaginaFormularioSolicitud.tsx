@@ -63,6 +63,7 @@ export default function PaginaFormularioSolicitud() {
             fechaRequerida: aValorFechaHoraLocal(existente.fechaRequerida),
             indicacionesCliente: existente.indicacionesCliente,
             observaciones: existente.observaciones,
+            valorAproximado: existente.valorAproximado ?? Number.NaN,
             estado: existente.estado,
           }
         : {
@@ -75,6 +76,7 @@ export default function PaginaFormularioSolicitud() {
             fechaRequerida: '',
             indicacionesCliente: '',
             observaciones: '',
+            valorAproximado: Number.NaN,
             estado: 'recibida',
           },
   })
@@ -138,7 +140,19 @@ export default function PaginaFormularioSolicitud() {
             <Selector etiqueta="Tipo de operación" requerido opciones={opcionesDe(ETIQUETAS_MODALIDAD, MODALIDADES)} error={errors.modalidad?.message} {...register('modalidad')} />
             <CampoTexto etiqueta="Carga" value={ETIQUETAS_TIPO_CARGA[TIPO_CARGA_POR_MODALIDAD[modalidad]]} disabled ayuda="Se define según el tipo de operación." readOnly />
             <Selector etiqueta="Tipo de carga" requerido textoTodos="Seleccione" opciones={categorias.map((t) => ({ valor: t.codigo, etiqueta: t.nombre }))} error={errors.categoriaCargaCodigo?.message} {...register('categoriaCargaCodigo')} />
-            <CampoTexto etiqueta="Descripción de la carga" requerido placeholder="Ej.: 20 pallets de repuestos" className="lg:col-span-3" error={errors.descripcionCarga?.message} {...register('descripcionCarga')} />
+            <CampoTexto etiqueta="Descripción de la carga" requerido placeholder="Ej.: 20 pallets de repuestos" className="lg:col-span-2" error={errors.descripcionCarga?.message} {...register('descripcionCarga')} />
+            <CampoTexto
+              etiqueta="Valor aproximado (USD)"
+              requerido
+              type="number"
+              min={0}
+              step="0.01"
+              inputMode="decimal"
+              placeholder="Ej.: 650"
+              ayuda="Al convertir la solicitud pasa al valor referencial del viaje."
+              error={errors.valorAproximado?.message}
+              {...register('valorAproximado', { valueAsNumber: true })}
+            />
           </fieldset>
           <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-5 pt-5 border-t border-borde">
             <legend className="sr-only">Recorrido y fecha</legend>

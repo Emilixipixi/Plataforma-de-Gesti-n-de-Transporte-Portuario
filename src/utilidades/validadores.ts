@@ -54,6 +54,7 @@ export const esquemaSolicitud = z
     fechaRequerida: z.string().min(1, MENSAJES.requerido).refine((valor) => !Number.isNaN(new Date(valor).getTime()), MENSAJES.fecha),
     indicacionesCliente: textoOpcional,
     observaciones: textoOpcional,
+    valorAproximado: z.number({ message: 'Ingrese el valor aproximado.' }).positive(MENSAJES.numeroPositivo),
     estado: z.enum(ESTADOS_SOLICITUD_EDITABLES),
   })
   .refine((datos) => datos.origenCodigo !== datos.destinoCodigo, {

@@ -20,6 +20,7 @@ function camposDesdeEntrada(entrada: EntradaSolicitud): Omit<Solicitud, 'codigo'
     fechaRequerida,
     indicacionesCliente: entrada.indicacionesCliente.trim(),
     observaciones: entrada.observaciones.trim(),
+    valorAproximado: Math.round(entrada.valorAproximado * 100) / 100,
     estado: entrada.estado,
   }
 }
@@ -116,7 +117,7 @@ export function convertirSolicitud(codigo: string): Operacion<Viaje> {
       ],
       salidaPrevista: solicitud.fechaRequerida,
       modalidadCobro: 'contra_factura',
-      valorReferencial: 0,
+      valorReferencial: solicitud.valorAproximado ?? 0,
       observaciones: observacionesDeViaje(solicitud),
       historialEstados: [{ fecha: ahora, estadoAnterior: null, estadoNuevo: 'solicitado', usuarioCodigo, motivo: `Conversión de ${solicitud.codigo}` }],
       ajustesProgramacion: [],

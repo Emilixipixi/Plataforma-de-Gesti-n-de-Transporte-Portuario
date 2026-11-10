@@ -17,9 +17,9 @@ import { Selector } from '@/componentes/formularios/Selector'
 import { coincideTexto } from '@/servicios/repositorio'
 import { nombreCliente, nombreLugar } from '@/servicios/consultas'
 import { aceptarSolicitud, convertirSolicitud, rechazarSolicitud } from '@/servicios/operaciones/solicitudes'
-import { ETIQUETAS_ESTADO_SOLICITUD, ETIQUETAS_MODALIDAD, opcionesDe } from '@/utilidades/constantes'
+import { ETIQUETAS_ESTADO_SOLICITUD, ETIQUETAS_MODALIDAD, ETIQUETAS_MODALIDAD_CORTA, opcionesDe } from '@/utilidades/constantes'
 import { claveDia } from '@/utilidades/fechas'
-import { formatearFechaHora } from '@/utilidades/formateadores'
+import { formatearFecha, formatearHora, formatearMoneda } from '@/utilidades/formateadores'
 import { ModalConversionSolicitud, ModalDetalleSolicitud, ModalRechazoSolicitud } from '@/paginas/solicitudes/ModalesSolicitud'
 
 export default function PaginaSolicitudes() {
@@ -75,23 +75,34 @@ export default function PaginaSolicitudes() {
   }
 
   const columnas: Columna<Solicitud>[] = [
-    { clave: 'codigo', titulo: 'Código', valorOrden: (s) => s.codigo, celda: (s) => <span className="font-mono font-semibold whitespace-nowrap">{s.codigo}</span> },
+    {
+      clave: 'creacion',
+      titulo: 'Solicitud',
+      valorOrden: (s) => s.fechaCreacion,
+      celda: (s) => (
+        <span className="block leading-tight whitespace-nowrap">
+          <span className="block font-mono font-semibold">{s.codigo}</span>
+          <span className="block text-xs text-texto-secundario">{formatearFecha(s.fechaCreacion)}</span>
+        </span>
+      ),
+    },
     {
       clave: 'cliente',
-      titulo: 'Cliente',
+      titulo: 'Cliente y carga',
       valorOrden: (s) => nombreCliente(datos, s.clienteCodigo),
       celda: (s) => (
         <span className="block leading-tight">
           <span className="block">{nombreCliente(datos, s.clienteCodigo)}</span>
-          <span className="block text-xs text-texto-secundario truncate max-w-64">{s.descripcionCarga}</span>
+          <span className="block text-xs text-texto-secundario">{s.descripcionCarga}</span>
+          <span className="block text-xs text-texto-secundario md:hidden">{ETIQUETAS_MODALIDAD_CORTA[s.modalidad]}</span>
         </span>
       ),
     },
-    { clave: 'modalidad', titulo: 'Tipo', valorOrden: (s) => ETIQUETAS_MODALIDAD[s.modalidad], celda: (s) => ETIQUETAS_MODALIDAD[s.modalidad], visibleDesde: 'lg' },
+    { clave: 'modalidad', titulo: 'Tipo', valorOrden: (s) => ETIQUETAS_MODALIDAD[s.modalidad], celda: (s) => ETIQUETAS_MODALIDAD_CORTA[s.modalidad], visibleDesde: 'md' },
     {
       clave: 'ruta',
       titulo: 'Origen y destino',
-      visibleDesde: '2xl',
+      visibleDesde: 'xl',
       celda: (s) => (
         <span className="block leading-tight text-sm">
           <span className="block">{nombreLugar(datos, s.origenCodigo)}</span>
@@ -99,20 +110,38 @@ export default function PaginaSolicitudes() {
         </span>
       ),
     },
-    { clave: 'fecha', titulo: 'Fecha requerida', valorOrden: (s) => s.fechaRequerida, celda: (s) => <span className="whitespace-nowrap">{formatearFechaHora(s.fechaRequerida)}</span> },
-    { clave: 'estado', titulo: 'Estado', valorOrden: (s) => ESTADOS_SOLICITUD.indexOf(s.estado), celda: (s) => <InsigniaEstadoSolicitud estado={s.estado} /> },
     {
-      clave: 'viaje',
-      titulo: 'Viaje',
-      valorOrden: (s) => s.viajeCodigo,
-      celda: (s) =>
-        s.viajeCodigo ? (
-          <Link to={`/viajes/${s.viajeCodigo}`} onClick={(e) => e.stopPropagation()} className="font-mono text-info whitespace-nowrap hover:underline underline-offset-2">{s.viajeCodigo}</Link>
-        ) : (
-          <span className="text-texto-secundario whitespace-nowrap">Sin viaje</span>
-        ),
+      clave: 'fecha',
+      titulo: 'Requerida',
+      valorOrden: (s) => s.fechaRequerida,
+      celda: (s) => (
+        <span className="block leading-tight whitespace-nowrap">
+          <span className="block">{formatearFecha(s.fechaRequerida)}</span>
+          <span className="block text-xs text-texto-secundario tabular-nums">{formatearHora(s.fechaRequerida)}</span>
+        </span>
+      ),
     },
-    { clave: 'creacion', titulo: 'Registro', valorOrden: (s) => s.fechaCreacion, celda: (s) => <span className="whitespace-nowrap text-texto-secundario">{formatearFechaHora(s.fechaCreacion)}</span>, visibleDesde: '2xl' },
+    {
+      clave: 'valor',
+      titulo: 'Valor aprox.',
+      alinear: 'derecha',
+      visibleDesde: 'md',
+      valorOrden: (s) => s.valorAproximado,
+      celda: (s) => (s.valorAproximado !== undefined ? <span className="tabular-nums whitespace-nowrap">{formatearMoneda(s.valorAproximado)}</span> : <span className="text-texto-secundario">Sin valor</span>),
+    },
+    {
+      clave: 'estado',
+      titulo: 'Estado',
+      valorOrden: (s) => ESTADOS_SOLICITUD.indexOf(s.estado),
+      celda: (s) => (
+        <span className="flex flex-col items-start gap-1">
+          <InsigniaEstadoSolicitud estado={s.estado} />
+          {s.viajeCodigo && (
+            <Link to={`/viajes/${s.viajeCodigo}`} onClick={(e) => e.stopPropagation()} className="font-mono text-xs text-info whitespace-nowrap hover:underline underline-offset-2">{s.viajeCodigo}</Link>
+          )}
+        </span>
+      ),
+    },
   ]
 
   return (

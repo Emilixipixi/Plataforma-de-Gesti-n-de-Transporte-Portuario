@@ -13,7 +13,7 @@ import { obtener } from '@/servicios/repositorio'
 import { nombreCliente, nombreLugar, nombreUsuario } from '@/servicios/consultas'
 import { siguienteCodigo } from '@/utilidades/calculos'
 import { ETIQUETAS_MODALIDAD, ETIQUETAS_TIPO_CARGA, prefijoDeViaje } from '@/utilidades/constantes'
-import { formatearFechaHora } from '@/utilidades/formateadores'
+import { formatearFechaHora, formatearMoneda } from '@/utilidades/formateadores'
 import { esquemaMotivo, type EntradaMotivo } from '@/utilidades/validadores'
 
 export function datosDeSolicitud(solicitud: Solicitud, datos: ReturnType<typeof usarApp>['datos']) {
@@ -26,6 +26,7 @@ export function datosDeSolicitud(solicitud: Solicitud, datos: ReturnType<typeof 
     { etiqueta: 'Origen', valor: nombreLugar(datos, solicitud.origenCodigo) },
     { etiqueta: 'Destino', valor: nombreLugar(datos, solicitud.destinoCodigo) },
     { etiqueta: 'Fecha requerida', valor: formatearFechaHora(solicitud.fechaRequerida) },
+    { etiqueta: 'Valor aproximado', valor: solicitud.valorAproximado !== undefined ? formatearMoneda(solicitud.valorAproximado) : 'Sin valor' },
   ]
 }
 

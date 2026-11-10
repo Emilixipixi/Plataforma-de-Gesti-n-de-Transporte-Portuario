@@ -90,7 +90,7 @@ export function Tabla<T>({
                     scope="col"
                     style={columna.ancho ? { width: columna.ancho } : undefined}
                     aria-sort={activa ? (direccion === 'asc' ? 'ascending' : 'descending') : undefined}
-                    className={`px-4 py-2.5 font-medium text-xs uppercase tracking-wide whitespace-nowrap ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}
+                    className={`px-3 py-2.5 font-medium text-xs uppercase tracking-wide whitespace-nowrap ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}
                   >
                     {columna.valorOrden ? (
                       <button type="button" onClick={() => alternarOrden(columna.clave)} className={`inline-flex items-center gap-1 uppercase hover:text-texto ${activa ? 'text-texto' : ''}`}>
@@ -103,7 +103,7 @@ export function Tabla<T>({
                   </th>
                 )
               })}
-              {acciones && <th scope="col" className="px-4 py-2.5 text-right font-medium text-xs uppercase tracking-wide">Acciones</th>}
+              {acciones && <th scope="col" className="px-3 py-2.5 text-right font-medium text-xs uppercase tracking-wide">Acciones</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-borde">
@@ -114,12 +114,12 @@ export function Tabla<T>({
                 className={`${onFila ? 'cursor-pointer hover:bg-fondo' : ''} ${resaltarFila?.(fila) ? 'bg-peligro-fondo/40' : ''}`}
               >
                 {columnas.map((columna) => (
-                  <td key={columna.clave} className={`px-4 py-3 align-middle ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}>
+                  <td key={columna.clave} className={`px-3 py-3 align-middle ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}>
                     {columna.celda(fila)}
                   </td>
                 ))}
                 {acciones && (
-                  <td className="px-4 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-2 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     {acciones(fila)}
                   </td>
                 )}

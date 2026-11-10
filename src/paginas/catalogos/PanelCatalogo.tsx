@@ -1,5 +1,5 @@
 import { useId, useState, type ComponentType, type ReactNode } from 'react'
-import { Lock, Pencil, Plus, Power, PowerOff, Save } from 'lucide-react'
+import { Lock, Pencil, Plus, Power, PowerOff, Save, type LucideProps } from 'lucide-react'
 import { ESTADOS_CATALOGO, type EstadoCatalogo } from '@/tipos/dominio'
 import { usarApp } from '@/hooks/usarApp'
 import { usarAutenticacion } from '@/hooks/usarAutenticacion'
@@ -15,7 +15,7 @@ import { Modal } from '@/componentes/modales/Modal'
 import { ModalConfirmacion } from '@/componentes/modales/ModalConfirmacion'
 import { coincideTexto, type EntidadDe } from '@/servicios/repositorio'
 import { cambiarEstadoEnCatalogo, guardarEnCatalogo, type ColeccionCatalogo, type ValoresCatalogo } from '@/servicios/operaciones/catalogos'
-import { ETIQUETAS_ESTADO_CATALOGO, opcionesDe, type Opcion } from '@/utilidades/constantes'
+import { ETIQUETAS_ESTADO_CATALOGO, opcionesDe, type Opcion, type Tono } from '@/utilidades/constantes'
 
 export interface PropiedadesFormularioCatalogo<C extends ColeccionCatalogo> {
   idFormulario: string
@@ -44,6 +44,23 @@ interface PropiedadesPanelCatalogo<C extends ColeccionCatalogo> {
   bloqueoDesactivar?: (elemento: EntidadDe<C>) => string | undefined
   avisoDesactivar?: (elemento: EntidadDe<C>) => string | undefined
   nota?: ReactNode
+  icono?: ComponentType<LucideProps>
+  indicadores?: IndicadorCatalogo[]
+}
+
+export interface IndicadorCatalogo {
+  etiqueta: string
+  valor: string | number
+  tono?: Tono | 'texto'
+}
+
+const COLOR_TONO: Record<Tono | 'texto', string> = {
+  texto: 'text-texto',
+  exito: 'text-exito',
+  pendiente: 'text-pendiente',
+  peligro: 'text-peligro',
+  info: 'text-info',
+  neutro: 'text-texto-secundario',
 }
 
 type EstadoModal<T> = { modo: 'crear' } | { modo: 'editar'; elemento: T } | null
@@ -62,6 +79,8 @@ export function PanelCatalogo<C extends ColeccionCatalogo>({
   bloqueoDesactivar,
   avisoDesactivar,
   nota,
+  icono: Icono,
+  indicadores = [],
 }: PropiedadesPanelCatalogo<C>) {
   const { datos } = usarApp()
   const { puede } = usarAutenticacion()
@@ -114,26 +133,51 @@ export function PanelCatalogo<C extends ColeccionCatalogo>({
     { clave: 'estado', titulo: 'Estado', valorOrden: (e) => e.estado, celda: (e) => <InsigniaEstadoCatalogo estado={e.estado} /> },
   ]
 
+  const activos = lista.filter((e) => e.estado === 'activo').length
+  const resumen: IndicadorCatalogo[] = [
+    { etiqueta: 'Total', valor: lista.length },
+    { etiqueta: 'Activos', valor: activos, tono: 'exito' },
+    { etiqueta: 'Inactivos', valor: lista.length - activos, tono: 'neutro' },
+    ...indicadores,
+  ]
+
   return (
-    <section>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-texto">{titulo}</h2>
-          <p className="text-sm text-texto-secundario mt-0.5">{descripcion}</p>
+    <section className="space-y-4">
+      <div className="bg-superficie border border-borde rounded-lg p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3 min-w-0">
+            {Icono && (
+              <span className="grid place-items-center size-10 rounded-lg bg-fondo border border-borde text-texto shrink-0">
+                <Icono className="size-5" aria-hidden="true" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-texto">{titulo}</h2>
+              <p className="text-sm text-texto-secundario mt-0.5">{descripcion}</p>
+            </div>
+          </div>
+          {puedeEscribir && (
+            <Boton variante="primario" icono={Plus} onClick={() => establecerModal({ modo: 'crear' })} className="shrink-0">
+              {g('Nuevo')} {singular}
+            </Boton>
+          )}
         </div>
-        {puedeEscribir && (
-          <Boton variante="primario" icono={Plus} onClick={() => establecerModal({ modo: 'crear' })} className="shrink-0">
-            {g('Nuevo')} {singular}
-          </Boton>
-        )}
+        <dl className="mt-4 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5">
+          {resumen.map((r) => (
+            <div key={r.etiqueta} className="rounded-md border border-borde bg-fondo/60 px-3 py-2 min-w-0">
+              <dt className="text-xs text-texto-secundario truncate" title={r.etiqueta}>{r.etiqueta}</dt>
+              <dd className={`mt-0.5 font-semibold tabular-nums truncate ${typeof r.valor === 'number' ? 'text-xl' : 'text-sm leading-7'} ${COLOR_TONO[r.tono ?? 'texto']}`} title={String(r.valor)}>{r.valor}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
       {nota}
-      <div className="flex flex-col md:flex-row md:flex-wrap md:items-end gap-3 mb-4">
-        <CampoBusqueda className="md:w-80" valor={listado.busqueda} onCambiar={listado.establecerBusqueda} marcador={`Buscar ${titulo.toLowerCase()}`} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-fr lg:items-end">
+        <CampoBusqueda className="sm:col-span-2 lg:col-span-1" valor={listado.busqueda} onCambiar={listado.establecerBusqueda} marcador={`Buscar ${titulo.toLowerCase()}`} />
         {filtros.map((f) => (
-          <Selector key={f.clave} etiqueta={f.etiqueta} textoTodos="Todos" value={listado.filtro(f.clave)} onChange={(e) => listado.establecerFiltro(f.clave, e.target.value)} opciones={f.opciones} className="md:w-56" />
+          <Selector key={f.clave} etiqueta={f.etiqueta} textoTodos="Todos" value={listado.filtro(f.clave)} onChange={(e) => listado.establecerFiltro(f.clave, e.target.value)} opciones={f.opciones} />
         ))}
-        <Selector etiqueta="Estado" textoTodos="Todos" value={estado} onChange={(e) => listado.establecerFiltro('estado', e.target.value)} opciones={opcionesDe(ETIQUETAS_ESTADO_CATALOGO, ESTADOS_CATALOGO)} className="md:w-40" />
+        <Selector etiqueta="Estado" textoTodos="Todos" value={estado} onChange={(e) => listado.establecerFiltro('estado', e.target.value)} opciones={opcionesDe(ETIQUETAS_ESTADO_CATALOGO, ESTADOS_CATALOGO)} />
         {listado.hayFiltros && <Boton variante="fantasma" onClick={listado.limpiar}>Limpiar filtros</Boton>}
       </div>
       <Tabla

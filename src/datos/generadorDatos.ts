@@ -45,12 +45,23 @@ import { crearActividad, ordenarActividadReciente, type DatosNuevaActividad } fr
 import { construirDatosGuia } from '@/servicios/documentos'
 import { calcularContadores } from '@/servicios/repositorio'
 import { formatearFechaHora } from '@/utilidades/formateadores'
+import {
+  CHOFERES_AMPLIADOS,
+  CLIENTES_AMPLIADOS,
+  facturacionAmpliada,
+  LUGARES_AMPLIADOS,
+  planesAmpliados,
+  solicitudesPendientesAmpliadas,
+  TRANSPORTISTAS_AMPLIADOS,
+  UNIDADES_AMPLIADAS,
+  type ResultadoAmpliado,
+} from '@/datos/datosAmpliados'
 
 const MS_MINUTO = 60_000
 const MS_HORA = 60 * MS_MINUTO
 const MS_DIA = 24 * MS_HORA
 
-interface Reloj {
+export interface Reloj {
   dia: (desplazamientoDias: number, hora: number, minuto?: number) => string
   relativo: (desplazamientoHoras: number, minutosExtra?: number) => string
   sumarMinutos: (iso: string, minutos: number) => string
@@ -139,7 +150,7 @@ const UNIDADES_BASE: Omit<Unidad, 'disponibilidad'>[] = [
   { codigo: 'UNI-008', placa: 'GPM-6150', tipo: 'Cabezal con plataforma', transportistaCodigo: 'TRA-004', estado: 'activo' },
 ]
 
-interface HitoPlan {
+export interface HitoPlan {
   hito: CodigoHito
   prevista: string
   real?: string
@@ -149,7 +160,7 @@ interface HitoPlan {
   evidencias?: Evidencia[]
 }
 
-interface PlanViaje {
+export interface PlanViaje {
   codigo: string
   solicitudCodigo?: string
   clienteCodigo: string
@@ -174,7 +185,7 @@ interface PlanViaje {
   observacionCierre?: string
 }
 
-interface PlanIncidencia {
+export interface PlanIncidencia {
   viajeCodigo: string
   tipo: string
   fechaHora: string
@@ -185,8 +196,12 @@ interface PlanIncidencia {
   resolucion?: { accion: string; fecha: string }
 }
 
+const TODOS_LOS_LUGARES: Lugar[] = [...LUGARES, ...LUGARES_AMPLIADOS]
+const TODOS_LOS_CHOFERES: Omit<Chofer, 'disponibilidad'>[] = [...CHOFERES_BASE, ...CHOFERES_AMPLIADOS]
+const TODAS_LAS_UNIDADES: Omit<Unidad, 'disponibilidad'>[] = [...UNIDADES_BASE, ...UNIDADES_AMPLIADAS]
+
 function ubicacionDe(lugarCodigo: string): string {
-  return LUGARES.find((lugar) => lugar.codigo === lugarCodigo)?.nombre ?? lugarCodigo
+  return TODOS_LOS_LUGARES.find((lugar) => lugar.codigo === lugarCodigo)?.nombre ?? lugarCodigo
 }
 
 function planesDeViaje(r: Reloj): PlanViaje[] {
@@ -582,7 +597,9 @@ function construirHistorial(plan: PlanViaje, fechaCreacion: string, r: Reloj): C
 }
 
 function construirViaje(plan: PlanViaje, r: Reloj): Viaje {
-  const fechaCreacion = r.sumarDias(plan.salidaPrevista, -3)
+  const tresDiasAntes = r.sumarDias(plan.salidaPrevista, -3)
+  const limiteCreacion = r.relativo(-20)
+  const fechaCreacion = tresDiasAntes < limiteCreacion ? tresDiasAntes : limiteCreacion
   const carga: Carga = {
     tipo: TIPO_CARGA_POR_MODALIDAD[plan.modalidad],
     categoriaCodigo: plan.categoriaCarga,
@@ -675,7 +692,7 @@ function construirIncidencias(planes: readonly PlanIncidencia[]): Incidencia[] {
   })
 }
 
-function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
+function construirSolicitudes(viajes: readonly Viaje[], r: Reloj, ampliado: ResultadoAmpliado): Solicitud[] {
   const desdeViaje = (codigoSolicitud: string, viajeCodigo: string, indicaciones: string): Solicitud => {
     const viaje = viajes.find((v) => v.codigo === viajeCodigo)
     if (!viaje) throw new Error(`Viaje ${viajeCodigo} inexistente en el generador.`)
@@ -690,6 +707,7 @@ function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
       destinoCodigo: viaje.destinoCodigo,
       fechaRequerida: viaje.salidaPrevista ?? viaje.fechaCreacion,
       indicacionesCliente: indicaciones,
+      valorAproximado: viaje.valorReferencial,
       observaciones: viaje.observaciones,
       estado: 'convertida',
       viajeCodigo: viaje.codigo,
@@ -697,6 +715,18 @@ function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
       creadoPor: viaje.creadoPor,
     }
   }
+  const vinculadas = ampliado.planes
+    .filter((plan) => plan.solicitudCodigo)
+    .map((plan) => desdeViaje(plan.solicitudCodigo ?? '', plan.codigo, ampliado.indicaciones.get(plan.codigo) ?? 'Sin indicaciones adicionales.'))
+  const siguiente = 11 + vinculadas.length
+  return [
+    ...solicitudesBase(desdeViaje, r),
+    ...vinculadas,
+    ...solicitudesPendientesAmpliadas(r, siguiente),
+  ]
+}
+
+function solicitudesBase(desdeViaje: (codigoSolicitud: string, viajeCodigo: string, indicaciones: string) => Solicitud, r: Reloj): Solicitud[] {
   return [
     desdeViaje('SOL-001', 'IMP-001', 'Retirar el contenedor en el primer turno de puerto.'),
     desdeViaje('SOL-002', 'IMP-002', 'Entregar en bodega de materias primas.'),
@@ -716,6 +746,7 @@ function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
       destinoCodigo: 'LUG-008',
       fechaRequerida: r.dia(5, 6),
       indicacionesCliente: 'Carga frágil; transporte con lona.',
+      valorAproximado: 1150,
       observaciones: 'Pendiente de revisión por Operaciones.',
       estado: 'recibida',
       fechaCreacion: r.dia(0, 8, 15),
@@ -732,6 +763,7 @@ function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
       destinoCodigo: 'LUG-011',
       fechaRequerida: r.dia(4, 7),
       indicacionesCliente: 'Devolver el contenedor en Depósito Durán.',
+      valorAproximado: 980,
       observaciones: 'Aceptada; lista para convertir en viaje.',
       estado: 'aceptada',
       fechaCreacion: r.dia(-1, 15, 40),
@@ -748,6 +780,7 @@ function construirSolicitudes(viajes: readonly Viaje[], r: Reloj): Solicitud[] {
       destinoCodigo: 'LUG-002',
       fechaRequerida: r.dia(-2, 6),
       indicacionesCliente: 'Requiere contenedor refrigerado.',
+      valorAproximado: 820,
       observaciones: 'Cliente informado por correo.',
       estado: 'rechazada',
       motivoRechazo: 'No había contenedor refrigerado disponible para la fecha requerida.',
@@ -768,7 +801,7 @@ interface PlanDocumento {
   version?: number
 }
 
-function construirDocumentos(datos: DatosApp, r: Reloj): Documento[] {
+function construirDocumentos(datos: DatosApp, r: Reloj, codigosAmpliados: readonly string[]): Documento[] {
   const viaje = (codigoViaje: string) => {
     const encontrado = datos.viajes.find((v) => v.codigo === codigoViaje)
     if (!encontrado) throw new Error(`Viaje ${codigoViaje} inexistente en el generador.`)
@@ -800,6 +833,27 @@ function construirDocumentos(datos: DatosApp, r: Reloj): Documento[] {
     guia('EXP-003', 'GR-DEMO-0009', -40, 'USR-003'),
     { viajeCodigo: 'EXP-003', tipo: 'conocimiento_embarque', numeroReferencial: 'BL-DEMO-55210', fecha: r.dia(-20, 16, 30), nombreArchivo: 'conocimiento_embarque_EXP-003.pdf', descripcion: 'Copia ilustrativa del conocimiento de embarque.', creadoPor: 'USR-002' },
   ]
+  let numeroGuia = 10
+  let numeroBl = 55211
+  for (const codigoViaje of codigosAmpliados) {
+    const v = viaje(codigoViaje)
+    if (!v.salidaReal) continue
+    const creador = v.creadoPor
+    planes.push(guia(codigoViaje, `GR-DEMO-${String(numeroGuia++).padStart(4, '0')}`, -45, creador))
+    if (v.estado !== 'finalizado') continue
+    if (v.modalidad === 'exportacion') {
+      planes.push({ viajeCodigo: codigoViaje, tipo: 'conocimiento_embarque', numeroReferencial: `BL-DEMO-${numeroBl++}`, fecha: r.sumarMinutos(v.cierreReal ?? v.salidaReal, 30), nombreArchivo: `conocimiento_embarque_${codigoViaje}.pdf`, descripcion: 'Copia ilustrativa del conocimiento de embarque.', creadoPor: creador })
+    } else if (numeroGuia % 2 === 0) {
+      planes.push({ viajeCodigo: codigoViaje, tipo: 'acta_entrega', fecha: r.sumarMinutos(v.llegadaReal ?? v.salidaReal, 120), nombreArchivo: `acta_entrega_${codigoViaje}.pdf`, descripcion: 'Acta de entrega firmada por el cliente.', creadoPor: creador })
+    }
+  }
+  for (const incidencia of datos.incidencias) {
+    if (!codigosAmpliados.includes(incidencia.viajeCodigo)) continue
+    for (const evidencia of incidencia.evidencias) {
+      planes.push({ viajeCodigo: incidencia.viajeCodigo, tipo: 'evidencia', fecha: evidencia.fecha, nombreArchivo: evidencia.nombre, descripcion: `Fotografía de la novedad registrada en ${incidencia.codigo}.`, creadoPor: incidencia.responsableCodigo })
+    }
+  }
+  planes.sort((a, b) => a.fecha.localeCompare(b.fecha))
   return planes.map((plan, indice) => {
     const v = viaje(plan.viajeCodigo)
     const cliente = datos.clientes.find((c) => c.codigo === v.clienteCodigo)
@@ -876,11 +930,11 @@ function construirDisponibilidad(viajes: readonly Viaje[]): { choferes: Chofer[]
   const choferesOcupados = new Set(activos.map((v) => v.choferCodigo))
   const unidadesOcupadas = new Set(activos.map((v) => v.unidadCodigo))
   return {
-    choferes: CHOFERES_BASE.map((chofer) => ({
+    choferes: TODOS_LOS_CHOFERES.map((chofer) => ({
       ...chofer,
       disponibilidad: choferesOcupados.has(chofer.codigo) ? 'en_servicio' : 'disponible',
     })),
-    unidades: UNIDADES_BASE.map((unidad) => ({
+    unidades: TODAS_LAS_UNIDADES.map((unidad) => ({
       ...unidad,
       disponibilidad: unidadesOcupadas.has(unidad.codigo) ? 'en_servicio' : unidad.codigo === 'UNI-006' ? 'mantenimiento' : 'disponible',
     })),
@@ -949,27 +1003,32 @@ function construirActividad(datos: DatosApp, fechaBase: Date): Actividad[] {
 
 export function generarDatosDemostrativos(fechaBase: Date = new Date()): DatosApp {
   const reloj = crearReloj(fechaBase)
-  const planes = planesDeViaje(reloj)
+  const planesBase = planesDeViaje(reloj)
+  const ampliado = planesAmpliados(reloj, 12, 4, 11)
+  const planes = [...planesBase, ...ampliado.planes]
   const viajes = planes.map((plan) => construirViaje(plan, reloj))
   const { choferes, unidades } = construirDisponibilidad(viajes)
+  const facturasBase = construirFacturas(viajes, reloj)
+  const yaFacturados = new Set(['IMP-008', ...facturasBase.flatMap((f) => f.viajeCodigos)])
+  const facturacion = facturacionAmpliada(viajes, reloj, facturasBase.length + 1, 6, yaFacturados)
 
   const datos: DatosApp = {
     usuarios: USUARIOS.map((u) => ({ ...u })),
-    clientes: CLIENTES.map((c) => ({ ...c })),
-    lugares: LUGARES.map((l) => ({ ...l })),
-    transportistas: TRANSPORTISTAS.map((t) => ({ ...t })),
+    clientes: [...CLIENTES, ...CLIENTES_AMPLIADOS].map((c) => ({ ...c })),
+    lugares: TODOS_LOS_LUGARES.map((l) => ({ ...l })),
+    transportistas: [...TRANSPORTISTAS, ...TRANSPORTISTAS_AMPLIADOS].map((t) => ({ ...t })),
     choferes,
     unidades,
     tiposCarga: CATALOGO_TIPOS_CARGA_BASE.map((t) => ({ ...t })),
     tiposEvento: CATALOGO_HITOS_BASE.map((t) => ({ ...t, modalidades: [...t.modalidades] })),
     tiposIncidencia: CATALOGO_TIPOS_INCIDENCIA_BASE.map((t) => ({ ...t })),
-    solicitudes: construirSolicitudes(viajes, reloj),
+    solicitudes: construirSolicitudes(viajes, reloj, ampliado),
     viajes,
     eventos: construirEventos(planes),
-    incidencias: construirIncidencias(planesDeIncidencia(reloj)),
+    incidencias: construirIncidencias([...planesDeIncidencia(reloj), ...ampliado.incidencias]),
     documentos: [],
-    facturas: construirFacturas(viajes, reloj),
-    pagos: construirPagos(reloj),
+    facturas: [...facturasBase, ...facturacion.facturas],
+    pagos: [...construirPagos(reloj), ...facturacion.pagos],
     actividad: [],
     configuracion: {
       versionEsquema: VERSION_ESQUEMA,
@@ -979,7 +1038,7 @@ export function generarDatosDemostrativos(fechaBase: Date = new Date()): DatosAp
       usuarioActivoCodigo: USUARIOS[0]?.codigo ?? 'USR-001',
     },
   }
-  datos.documentos = construirDocumentos(datos, reloj)
+  datos.documentos = construirDocumentos(datos, reloj, ampliado.planes.map((p) => p.codigo))
   datos.actividad = construirActividad(datos, fechaBase)
   datos.configuracion.contadores = calcularContadores(datos)
   return datos
