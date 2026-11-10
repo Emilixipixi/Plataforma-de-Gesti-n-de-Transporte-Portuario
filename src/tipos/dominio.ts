@@ -329,7 +329,11 @@ export interface Pago {
   valor: number
   referencia: string
   estado: EstadoPago
+  observacion?: string
+  comprobante?: Evidencia
+  registradoPor?: string
   validadorCodigo?: string
+  fechaValidacion?: string
 }
 
 export interface Actividad {

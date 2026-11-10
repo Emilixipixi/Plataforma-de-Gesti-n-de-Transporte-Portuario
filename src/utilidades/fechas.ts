@@ -67,3 +67,38 @@ export function intervalosSeSolapan(
 export function ahoraIso(): string {
   return new Date().toISOString()
 }
+
+export function fechaDesdeClave(clave: string): Date {
+  return new Date(inicioDiaUtc(clave))
+}
+
+export function sumarDiasAClave(clave: string, dias: number): string {
+  return new Date(inicioDiaUtc(clave) + dias * MS_DIA).toISOString().slice(0, 10)
+}
+
+export function diaDeSemana(clave: string): number {
+  const dia = fechaDesdeClave(clave).getUTCDay()
+  return dia === 0 ? 7 : dia
+}
+
+export function inicioDeSemana(clave: string): string {
+  return sumarDiasAClave(clave, 1 - diaDeSemana(clave))
+}
+
+export function inicioDeMes(clave: string): string {
+  return `${clave.slice(0, 8)}01`
+}
+
+export function sumarMesesAClave(clave: string, meses: number): string {
+  const fecha = fechaDesdeClave(inicioDeMes(clave))
+  fecha.setUTCMonth(fecha.getUTCMonth() + meses)
+  return fecha.toISOString().slice(0, 10)
+}
+
+export function esClaveValida(valor: string | null): valor is string {
+  return valor !== null && /^\d{4}-\d{2}-\d{2}$/.test(valor) && !Number.isNaN(fechaDesdeClave(valor).getTime())
+}
+
+export function isoDesdeClave(clave: string, hora = 12): string {
+  return new Date(inicioDiaUtc(clave) + (hora - OFFSET_ECUADOR_HORAS) * MS_HORA).toISOString()
+}

@@ -86,7 +86,7 @@ export function eliminar<C extends ColeccionDatos>(datos: DatosApp, coleccion: C
   return { ...datos, [coleccion]: lista.filter((entidad) => entidad.codigo !== codigo) }
 }
 
-function normalizar(texto: string): string {
+export function normalizarTexto(texto: string): string {
   return texto
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
@@ -95,9 +95,9 @@ function normalizar(texto: string): string {
 }
 
 export function coincideTexto(consulta: string, valores: readonly (string | undefined)[]): boolean {
-  const termino = normalizar(consulta)
+  const termino = normalizarTexto(consulta)
   if (!termino) return true
-  return valores.some((valor) => valor !== undefined && normalizar(valor).includes(termino))
+  return valores.some((valor) => valor !== undefined && normalizarTexto(valor).includes(termino))
 }
 
 export function buscar<C extends ColeccionDatos>(

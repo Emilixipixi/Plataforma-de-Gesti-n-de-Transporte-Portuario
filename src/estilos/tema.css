@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+@theme static {
   --color-barra: #14171A;
   --color-barra-hover: #1F2428;
   --color-acento: #E2A829;
@@ -21,6 +21,11 @@
   --color-pendiente-fondo: #FFF3D6;
   --color-peligro: #8E2A1F;
   --color-peligro-fondo: #FBE7E4;
+
+  --color-grafico-1: #2F6FA8;
+  --color-grafico-2: #E2A829;
+  --color-grafico-3: #7A5FA8;
+  --color-grafico-rejilla: #EDEFF2;
 
   --color-barra-texto: #C9CED4;
   --color-barra-texto-tenue: #8A929B;
@@ -45,5 +50,37 @@
 
   ::selection {
     @apply bg-acento-suave text-texto;
+  }
+}
+
+@utility desplazamiento-oscuro {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-barra-borde) transparent;
+  scrollbar-gutter: stable;
+
+  &:hover {
+    scrollbar-color: var(--color-barra-texto-tenue) transparent;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .zona-impresion,
+  .zona-impresion * {
+    visibility: visible;
+  }
+
+  .zona-impresion {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    border: 0;
+  }
+
+  .no-imprimir {
+    display: none !important;
   }
 }

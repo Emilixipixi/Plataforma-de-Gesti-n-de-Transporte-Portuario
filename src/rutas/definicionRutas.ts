@@ -37,6 +37,7 @@ export const RUTAS: readonly DefinicionRuta[] = [
   { ruta: '/reportes/cliente', titulo: 'Reporte para cliente', descripcion: 'Formato compartible semanal o mensual por cliente.', pantalla: 'P-13', acciones: ['reportes.cliente.ver'], fase: 5, padre: '/reportes' },
   { ruta: '/contabilidad/por-facturar', titulo: 'Por facturar', descripcion: 'Servicios finalizados listos para facturar.', pantalla: 'P-14', acciones: ['facturacion.ver'], fase: 6 },
   { ruta: '/contabilidad/facturas', titulo: 'Facturas', descripcion: 'Facturas registradas y servicios agrupados.', pantalla: 'P-15', acciones: ['facturacion.ver'], fase: 6 },
+  { ruta: '/contabilidad/facturas/:codigo', titulo: 'Detalle de factura', descripcion: 'Servicios agrupados, saldo y pagos de la factura.', pantalla: 'P-15', acciones: ['facturacion.ver'], fase: 6, padre: '/contabilidad/facturas' },
   { ruta: '/contabilidad/cartera', titulo: 'Cartera', descripcion: 'Vencimientos, saldos y alertas de cartera.', pantalla: 'P-16', acciones: ['cartera.ver'], fase: 6 },
   { ruta: '/contabilidad/pagos', titulo: 'Pagos', descripcion: 'Registro y validación de pagos.', pantalla: 'P-16', acciones: ['pagos.ver'], fase: 6 },
   { ruta: '/catalogos/:catalogo', titulo: 'Catálogos', descripcion: 'Catálogos que alimentan los formularios.', pantalla: 'P-17', acciones: ['catalogos.ver'], fase: 2 },

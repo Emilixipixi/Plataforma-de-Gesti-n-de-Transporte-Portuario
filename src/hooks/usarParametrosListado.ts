@@ -8,6 +8,7 @@ export interface OpcionesListado {
   prefijo?: string
   ordenPredeterminado?: string
   direccionPredeterminada?: DireccionOrden
+  conservar?: readonly string[]
 }
 
 export interface ParametrosListado {
@@ -26,7 +27,9 @@ export interface ParametrosListado {
   limpiar: () => void
 }
 
-export function usarParametrosListado({ prefijo = '', ordenPredeterminado = '', direccionPredeterminada = 'asc' }: OpcionesListado = {}): ParametrosListado {
+const SIN_CONSERVAR: readonly string[] = []
+
+export function usarParametrosListado({ prefijo = '', ordenPredeterminado = '', direccionPredeterminada = 'asc', conservar = SIN_CONSERVAR }: OpcionesListado = {}): ParametrosListado {
   const [parametros, establecerParametros] = useSearchParams()
   const clave = useCallback((nombre: string) => (prefijo ? `${prefijo}_${nombre}` : nombre), [prefijo])
 
@@ -56,7 +59,7 @@ export function usarParametrosListado({ prefijo = '', ordenPredeterminado = '', 
   const tamanoLeido = Number(parametros.get(clave('tam')))
   const tamano = (TAMANOS_PAGINA as readonly number[]).includes(tamanoLeido) ? tamanoLeido : TAMANO_PAGINA_PREDETERMINADO
 
-  const reservadas = useMemo(() => new Set(['q', 'orden', 'dir', 'pagina', 'tam'].map(clave)), [clave])
+  const reservadas = useMemo(() => new Set([...['q', 'orden', 'dir', 'pagina', 'tam'].map(clave), ...conservar]), [clave, conservar])
   const hayFiltros =
     busqueda !== '' ||
     Array.from(parametros.keys()).some((nombre) => !reservadas.has(nombre) && (prefijo ? nombre.startsWith(`${prefijo}_`) : true))
@@ -80,7 +83,7 @@ export function usarParametrosListado({ prefijo = '', ordenPredeterminado = '', 
         (actuales) => {
           const nuevos = new URLSearchParams()
           for (const [nombre, valor] of actuales) {
-            if (prefijo && !nombre.startsWith(`${prefijo}_`)) nuevos.set(nombre, valor)
+            if ((prefijo && !nombre.startsWith(`${prefijo}_`)) || conservar.includes(nombre)) nuevos.set(nombre, valor)
           }
           return nuevos
         },

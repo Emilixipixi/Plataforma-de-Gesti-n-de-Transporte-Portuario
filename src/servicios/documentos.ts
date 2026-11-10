@@ -1,4 +1,4 @@
-import type { DatosApp, DatosGuia, Viaje } from '@/tipos/dominio'
+import type { DatosApp, DatosGuia, Documento, Viaje } from '@/tipos/dominio'
 import { obtener } from '@/servicios/repositorio'
 
 const SIN_ASIGNAR = 'Sin asignar'
@@ -36,4 +36,16 @@ export function construirDatosGuia(datos: DatosApp, viaje: Viaje): DatosGuia {
     contenedor: contenedor ? `${contenedor.numero} (${contenedor.tipo})` : undefined,
     recorrido: recorridoDeViaje(datos, viaje),
   }
+}
+
+export function siguienteNumeroGuia(datos: DatosApp): string {
+  const maximo = datos.documentos
+    .map((d) => /GR-DEMO-(\d+)/.exec(d.numeroReferencial ?? '')?.[1])
+    .filter((n): n is string => n !== undefined)
+    .reduce((m, n) => Math.max(m, Number(n)), 0)
+  return `GR-DEMO-${String(maximo + 1).padStart(4, '0')}`
+}
+
+export function versionSiguiente(datos: DatosApp, viajeCodigo: string, tipo: Documento['tipo']): number {
+  return datos.documentos.filter((d) => d.viajeCodigo === viajeCodigo && d.tipo === tipo).length + 1
 }

@@ -33,7 +33,7 @@ export function BarraLateral({ abiertaEnMovil, onCerrar }: PropiedadesBarraLater
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <nav className="desplazamiento-oscuro flex-1 overflow-y-auto px-3 py-4 space-y-5">
           {secciones.map((seccion) => (
             <div key={seccion.titulo}>
               <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-barra-texto-tenue">{seccion.titulo}</p>

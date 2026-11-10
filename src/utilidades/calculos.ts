@@ -144,13 +144,15 @@ export interface Solapamiento {
   recursoCodigo: string
 }
 
-function finPrevisto(viaje: Viaje): string | undefined {
+export type ViajeProgramable = Pick<Viaje, 'codigo' | 'salidaPrevista' | 'llegadaPrevista' | 'cierrePrevisto' | 'choferCodigo' | 'unidadCodigo'>
+
+function finPrevisto(viaje: ViajeProgramable): string | undefined {
   if (esFechaValida(viaje.cierrePrevisto)) return viaje.cierrePrevisto
   if (esFechaValida(viaje.llegadaPrevista)) return viaje.llegadaPrevista
   return undefined
 }
 
-export function hayAdvertenciaSolapamiento(viaje: Viaje, viajes: readonly Viaje[]): Solapamiento[] {
+export function hayAdvertenciaSolapamiento(viaje: ViajeProgramable, viajes: readonly Viaje[]): Solapamiento[] {
   const inicio = viaje.salidaPrevista
   const fin = finPrevisto(viaje)
   if (!esFechaValida(inicio) || !fin) return []

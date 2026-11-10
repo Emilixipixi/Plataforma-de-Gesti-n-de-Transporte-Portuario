@@ -15,6 +15,7 @@ import { Tabla, type Columna } from '@/componentes/tablas/Tabla'
 import { CampoBusqueda } from '@/componentes/formularios/CampoBusqueda'
 import { Selector } from '@/componentes/formularios/Selector'
 import { ModalConfirmacion } from '@/componentes/modales/ModalConfirmacion'
+import { ModalNuevoCliente } from '@/componentes/clientes/ModalNuevoCliente'
 import { coincideTexto } from '@/servicios/repositorio'
 import { viajesDeCliente } from '@/servicios/consultas'
 import { cambiarEstadoCliente } from '@/servicios/operaciones/clientes'
@@ -30,6 +31,7 @@ export default function PaginaClientes() {
   const navegar = useNavigate()
   const listado = usarParametrosListado({ ordenPredeterminado: 'codigo' })
   const [cambioEstado, establecerCambioEstado] = useState<{ cliente: Cliente; estado: EstadoCatalogo } | null>(null)
+  const [creando, establecerCreando] = useState(false)
   const puedeEscribir = puede('clientes.escribir')
 
   const estado = listado.filtro('estado')
@@ -102,7 +104,7 @@ export default function PaginaClientes() {
           <Boton
             variante="primario"
             icono={Plus}
-            onClick={() => navegar('/clientes/nuevo')}
+            onClick={() => establecerCreando(true)}
             motivoDeshabilitado={puedeEscribir ? undefined : explicacionSinPermiso(perfil)}
           >
             Nuevo cliente
@@ -150,6 +152,7 @@ export default function PaginaClientes() {
         onConfirmar={confirmarCambio}
         onCancelar={() => establecerCambioEstado(null)}
       />
+      <ModalNuevoCliente abierto={creando} onCerrar={() => establecerCreando(false)} />
     </>
   )
 }

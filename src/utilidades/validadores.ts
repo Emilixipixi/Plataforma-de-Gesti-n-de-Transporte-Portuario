@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DISPONIBILIDADES_CHOFER, DISPONIBILIDADES_UNIDAD, ESTADOS_CATALOGO, MODALIDADES, TIPOS_LUGAR } from '@/tipos/dominio'
+import { DISPONIBILIDADES_CHOFER, DISPONIBILIDADES_UNIDAD, ESTADOS_CATALOGO, MODALIDADES, MODALIDADES_COBRO, TIPOS_LUGAR } from '@/tipos/dominio'
 
 export const MENSAJES = {
   requerido: 'Este campo es obligatorio.',
@@ -115,3 +115,135 @@ export const esquemaTipoEvento = z.object({
   estado: estadoCatalogo,
 })
 export type EntradaTipoEvento = z.infer<typeof esquemaTipoEvento>
+
+export const PATRON_CONTENEDOR = /^[A-Z]{4}\d{7}$/
+
+const fechaLocalOpcional = z.string().refine((v) => v === '' || !Number.isNaN(new Date(v).getTime()), MENSAJES.fecha)
+
+export const esquemaViaje = z
+  .object({
+    clienteCodigo: z.string().min(1, 'Seleccione un cliente.'),
+    modalidad: z.enum(MODALIDADES, { message: 'Seleccione la modalidad.' }),
+    categoriaCargaCodigo: z.string().min(1, 'Seleccione el tipo de carga.'),
+    descripcionCarga: textoRequerido(3),
+    observacionesCarga: textoOpcional,
+    contenedorTipo: z.string(),
+    contenedorNumero: z.string().trim().toUpperCase(),
+    origenCodigo: z.string().min(1, 'Seleccione el origen.'),
+    paradas: z.array(z.object({ lugarCodigo: z.string().min(1, 'Seleccione el lugar de la parada.') })),
+    destinoCodigo: z.string().min(1, 'Seleccione el destino.'),
+    devolucionCodigo: z.string(),
+    transportistaCodigo: z.string(),
+    choferCodigo: z.string(),
+    unidadCodigo: z.string(),
+    salidaPrevista: fechaLocalOpcional,
+    llegadaPrevista: fechaLocalOpcional,
+    cierrePrevisto: fechaLocalOpcional,
+    modalidadCobro: z.enum(MODALIDADES_COBRO),
+    valorReferencial: z.number({ message: 'Ingrese un valor numérico.' }).min(0, 'El valor no puede ser negativo.'),
+    observaciones: textoOpcional,
+    motivoAjuste: textoOpcional,
+  })
+  .superRefine((v, ctx) => {
+    const error = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message })
+    if (v.modalidad !== 'importacion_suelta' && !v.contenedorTipo) error('contenedorTipo', 'Seleccione el tipo de contenedor.')
+    if (v.contenedorNumero && !PATRON_CONTENEDOR.test(v.contenedorNumero)) error('contenedorNumero', 'Use 4 letras y 7 dígitos, por ejemplo PFLU4821935.')
+    if (v.origenCodigo && v.origenCodigo === v.destinoCodigo) error('destinoCodigo', 'El destino debe ser distinto del origen.')
+    if (v.modalidad === 'importacion_contenedorizada' && !v.devolucionCodigo) error('devolucionCodigo', 'Indique el depósito de devolución del contenedor.')
+    if (v.modalidad === 'exportacion' && v.paradas.length === 0) error('paradas', 'Agregue el paso por cliente o planta donde se carga el contenedor.')
+    if (v.choferCodigo && !v.transportistaCodigo) error('transportistaCodigo', 'Seleccione el transportista del chofer.')
+    if (v.unidadCodigo && !v.transportistaCodigo) error('transportistaCodigo', 'Seleccione el transportista de la unidad.')
+    if ((v.llegadaPrevista || v.cierrePrevisto) && !v.salidaPrevista) error('salidaPrevista', 'Indique la salida prevista.')
+    if (v.salidaPrevista && v.llegadaPrevista && v.llegadaPrevista <= v.salidaPrevista) error('llegadaPrevista', 'Debe ser posterior a la salida prevista.')
+    if (v.llegadaPrevista && v.cierrePrevisto && v.cierrePrevisto < v.llegadaPrevista) error('cierrePrevisto', 'No puede ser anterior a la llegada prevista.')
+  })
+
+export type EntradaViaje = z.infer<typeof esquemaViaje>
+
+export const esquemaCancelacion = z.object({ motivo: textoRequerido(10, 'Documente el motivo con al menos 10 caracteres.') })
+export type EntradaCancelacion = z.infer<typeof esquemaCancelacion>
+
+const fechaLocalRequerida = z.string().min(1, MENSAJES.requerido).refine((v) => !Number.isNaN(new Date(v).getTime()), MENSAJES.fecha)
+
+export const esquemaEvento = z.object({
+  tipoEventoCodigo: z.string().min(1, 'Seleccione el hito o evento.'),
+  ubicacion: textoRequerido(3),
+  horaPrevista: fechaLocalOpcional,
+  horaReal: fechaLocalRequerida,
+  comentario: textoOpcional,
+})
+export type EntradaEvento = z.infer<typeof esquemaEvento>
+
+export const esquemaIncidencia = z.object({
+  viajeCodigo: z.string().min(1, 'Seleccione el viaje.'),
+  tipoIncidenciaCodigo: z.string().min(1, 'Seleccione el tipo de incidencia.'),
+  fechaHora: fechaLocalRequerida,
+  ubicacion: textoRequerido(3),
+  descripcion: textoRequerido(10, 'Describa la incidencia con al menos 10 caracteres.'),
+})
+export type EntradaIncidencia = z.infer<typeof esquemaIncidencia>
+
+export const esquemaResolucion = z.object({
+  accionCorrectiva: textoRequerido(10, 'Describa la acción correctiva con al menos 10 caracteres.'),
+  fechaResolucion: fechaLocalRequerida,
+})
+export type EntradaResolucion = z.infer<typeof esquemaResolucion>
+
+export const esquemaFinalizacion = z.object({
+  horaCierre: fechaLocalRequerida,
+  observacionCierre: textoOpcional,
+})
+export type EntradaFinalizacion = z.infer<typeof esquemaFinalizacion>
+
+export const esquemaGuia = z.object({
+  remitente: textoRequerido(3),
+  destinatario: textoRequerido(3),
+  identificacionDestinatario: textoRequerido(5),
+  transportista: textoRequerido(3),
+  chofer: textoRequerido(3),
+  unidad: textoRequerido(3),
+  placa: z.string().trim().toUpperCase().min(1, MENSAJES.requerido).regex(PATRON_PLACA, 'Use el formato ABC-1234.'),
+  origen: textoRequerido(3),
+  destino: textoRequerido(3),
+  carga: textoRequerido(3),
+  contenedor: textoOpcional,
+  recorrido: textoRequerido(3),
+  emisor: textoRequerido(3),
+  receptor: textoRequerido(3),
+})
+export type EntradaGuia = z.infer<typeof esquemaGuia>
+
+export const esquemaAdjunto = z.object({
+  viajeCodigo: z.string().min(1, 'Seleccione el viaje.'),
+  tipo: z.enum(['conocimiento_embarque', 'acta_entrega', 'evidencia', 'otro'], { message: 'Seleccione el tipo de documento.' }),
+  numeroReferencial: textoOpcional,
+  emisor: textoRequerido(3),
+  receptor: textoRequerido(3),
+  descripcion: textoRequerido(5),
+})
+export type EntradaAdjuntoFormulario = z.infer<typeof esquemaAdjunto>
+
+const claveFechaRequerida = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, MENSAJES.fecha)
+const valorMonetario = z.number({ message: 'Ingrese un valor numérico.' }).positive(MENSAJES.numeroPositivo).refine((v) => Math.abs(v * 100 - Math.round(v * 100)) < 1e-6, 'Use como máximo dos decimales.')
+
+export const esquemaFactura = z
+  .object({
+    clienteCodigo: z.string().min(1, 'Seleccione el cliente.'),
+    viajeCodigos: z.array(z.string()).min(1, 'Seleccione al menos un servicio por facturar.'),
+    referencia: textoRequerido(3),
+    fechaEmision: claveFechaRequerida,
+    fechaVencimiento: claveFechaRequerida,
+    valor: valorMonetario,
+    modalidadCobro: z.enum(MODALIDADES_COBRO, { message: 'Seleccione la modalidad de cobro.' }),
+  })
+  .refine((f) => f.fechaVencimiento >= f.fechaEmision, { path: ['fechaVencimiento'], message: 'El vencimiento no puede ser anterior a la emisión.' })
+export type EntradaFactura = z.infer<typeof esquemaFactura>
+
+export const esquemaPago = z.object({
+  facturaCodigo: z.string().min(1, 'Seleccione la factura.'),
+  fecha: claveFechaRequerida,
+  valor: valorMonetario,
+  referencia: textoRequerido(3),
+  observacion: textoOpcional,
+})
+export type EntradaPago = z.infer<typeof esquemaPago>

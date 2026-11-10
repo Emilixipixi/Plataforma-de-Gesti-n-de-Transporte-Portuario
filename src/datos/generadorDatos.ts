@@ -44,6 +44,7 @@ import {
 import { crearActividad, ordenarActividadReciente, type DatosNuevaActividad } from '@/servicios/actividad'
 import { construirDatosGuia } from '@/servicios/documentos'
 import { calcularContadores } from '@/servicios/repositorio'
+import { formatearFechaHora } from '@/utilidades/formateadores'
 
 const MS_MINUTO = 60_000
 const MS_HORA = 60 * MS_MINUTO
@@ -337,7 +338,7 @@ function planesDeViaje(r: Reloj): PlanViaje[] {
       creadoPor: 'USR-003',
       hitos: [],
       ajustes: [
-        { fecha: r.dia(-1, 16, 20), motivo: 'El cliente solicitó recibir la carga después de las 10:00.', usuarioCodigo: 'USR-003', campo: 'salidaPrevista', valorAnterior: r.dia(1, 6), valorNuevo: r.dia(1, 8) },
+        { fecha: r.dia(-1, 16, 20), motivo: 'El cliente solicitó recibir la carga después de las 10:00.', usuarioCodigo: 'USR-003', campo: 'Salida prevista', valorAnterior: formatearFechaHora(r.dia(1, 6)), valorNuevo: formatearFechaHora(r.dia(1, 8)) },
       ],
     },
     {
@@ -851,12 +852,22 @@ function construirFacturas(viajes: readonly Viaje[], r: Reloj): Factura[] {
 }
 
 function construirPagos(r: Reloj): Pago[] {
+  const pago = (numero: number, facturaCodigo: string, fecha: string, valor: number, referencia: string, validado: boolean): Pago => ({
+    codigo: codigo('PAG', numero),
+    facturaCodigo,
+    fecha,
+    valor,
+    referencia,
+    estado: validado ? 'validado' : 'registrado',
+    registradoPor: USUARIO_CONTABLE,
+    ...(validado ? { validadorCodigo: USUARIO_CONTABLE, fechaValidacion: new Date(new Date(fecha).getTime() + 2 * MS_HORA).toISOString() } : {}),
+  })
   return [
-    { codigo: 'PAG-001', facturaCodigo: 'FAC-001', fecha: r.dia(-3, 11), valor: 400, referencia: 'TRF-DEMO-88120', estado: 'validado', validadorCodigo: USUARIO_CONTABLE },
-    { codigo: 'PAG-002', facturaCodigo: 'FAC-002', fecha: r.dia(-25, 15), valor: 500, referencia: 'TRF-DEMO-87344', estado: 'validado', validadorCodigo: USUARIO_CONTABLE },
-    { codigo: 'PAG-003', facturaCodigo: 'FAC-003', fecha: r.dia(-1, 16), valor: 300, referencia: 'TRF-DEMO-88301', estado: 'registrado' },
-    { codigo: 'PAG-004', facturaCodigo: 'FAC-004', fecha: r.dia(-15, 10), valor: 400, referencia: 'TRF-DEMO-87702', estado: 'validado', validadorCodigo: USUARIO_CONTABLE },
-    { codigo: 'PAG-005', facturaCodigo: 'FAC-004', fecha: r.dia(-12, 10), valor: 360, referencia: 'TRF-DEMO-87955', estado: 'validado', validadorCodigo: USUARIO_CONTABLE },
+    pago(1, 'FAC-001', r.dia(-3, 11), 400, 'TRF-DEMO-88120', true),
+    pago(2, 'FAC-002', r.dia(-25, 15), 500, 'TRF-DEMO-87344', true),
+    pago(3, 'FAC-003', r.dia(-1, 16), 300, 'TRF-DEMO-88301', false),
+    pago(4, 'FAC-004', r.dia(-15, 10), 400, 'TRF-DEMO-87702', true),
+    pago(5, 'FAC-004', r.dia(-12, 10), 360, 'TRF-DEMO-87955', true),
   ]
 }
 
@@ -926,7 +937,7 @@ function construirActividad(datos: DatosApp, fechaBase: Date): Actividad[] {
   for (const pago of datos.pagos) {
     entradas.push({ usuarioCodigo: USUARIO_CONTABLE, accion: 'pago', entidad: 'pago', codigoEntidad: pago.codigo, descripcion: `Pago ${pago.referencia} registrado para ${pago.facturaCodigo}.`, fechaHora: pago.fecha })
     if (pago.estado === 'validado') {
-      entradas.push({ usuarioCodigo: pago.validadorCodigo ?? USUARIO_CONTABLE, accion: 'validacion_pago', entidad: 'pago', codigoEntidad: pago.codigo, descripcion: `Pago ${pago.referencia} validado.`, fechaHora: new Date(new Date(pago.fecha).getTime() + 2 * MS_HORA).toISOString() })
+      entradas.push({ usuarioCodigo: pago.validadorCodigo ?? USUARIO_CONTABLE, accion: 'validacion_pago', entidad: 'pago', codigoEntidad: pago.codigo, descripcion: `Pago ${pago.referencia} validado.`, fechaHora: pago.fechaValidacion ?? pago.fecha })
     }
   }
   const limite = fechaBase.toISOString()

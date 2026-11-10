@@ -8,11 +8,12 @@ interface PropiedadesSelector extends Omit<SelectHTMLAttributes<HTMLSelectElemen
   textoTodos?: string
   ocultarEtiqueta?: boolean
   error?: string
+  ayuda?: string
   requerido?: boolean
 }
 
 export const Selector = forwardRef<HTMLSelectElement, PropiedadesSelector>(function Selector(
-  { etiqueta, opciones, textoTodos, ocultarEtiqueta = false, error, requerido, className = '', id, ...resto },
+  { etiqueta, opciones, textoTodos, ocultarEtiqueta = false, error, ayuda, requerido, className = '', id, ...resto },
   referencia,
 ) {
   const idGenerado = useId()
@@ -39,7 +40,7 @@ export const Selector = forwardRef<HTMLSelectElement, PropiedadesSelector>(funct
         </select>
         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-texto-secundario" aria-hidden="true" />
       </div>
-      {error && <p className="text-xs text-peligro">{error}</p>}
+      {error ? <p className="text-xs text-peligro">{error}</p> : ayuda ? <p className="text-xs text-texto-secundario">{ayuda}</p> : null}
     </div>
   )
 })

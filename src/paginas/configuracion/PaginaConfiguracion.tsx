@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Save } from 'lucide-react'
 import { usarApp } from '@/hooks/usarApp'
 import { usarAutenticacion } from '@/hooks/usarAutenticacion'
 import { usarNotificaciones } from '@/hooks/usarNotificaciones'
@@ -8,7 +8,11 @@ import { Panel } from '@/componentes/comunes/Panel'
 import { Boton } from '@/componentes/comunes/Boton'
 import { AvisoDemostrativo } from '@/componentes/comunes/AvisoDemostrativo'
 import { ModalConfirmacion } from '@/componentes/modales/ModalConfirmacion'
+import { CampoTexto } from '@/componentes/formularios/CampoTexto'
+import { usarOperacion } from '@/hooks/usarOperacion'
+import { actualizarDiasAlerta, LIMITES_DIAS_ALERTA } from '@/servicios/operaciones/configuracion'
 import { formatearFechaHora } from '@/utilidades/formateadores'
+import { DIAS_ALERTA_VENCIMIENTO_PREDETERMINADOS } from '@/utilidades/constantes'
 import type { ColeccionDatos } from '@/tipos/dominio'
 
 const RESUMEN: readonly { coleccion: ColeccionDatos; etiqueta: string }[] = [
@@ -32,10 +36,23 @@ export default function PaginaConfiguracion() {
   const { usuario, puede } = usarAutenticacion()
   const { notificar } = usarNotificaciones()
   const [confirmando, establecerConfirmando] = useState(false)
+  const ejecutar = usarOperacion()
+  const [dias, establecerDias] = useState(String(datos.configuracion.diasAlertaVencimiento))
+  const [errorDias, establecerErrorDias] = useState<string | undefined>()
+
+  const guardarDias = () => {
+    const resultado = ejecutar(actualizarDiasAlerta(Number(dias)))
+    if (!resultado.ok) {
+      establecerErrorDias(resultado.error)
+      return
+    }
+    notificar('exito', 'Parámetro actualizado', `Las facturas se marcan como próximas a vencer ${resultado.valor} días antes.`)
+  }
 
   const confirmar = () => {
     restablecer(usuario?.codigo)
     establecerConfirmando(false)
+    establecerDias(String(DIAS_ALERTA_VENCIMIENTO_PREDETERMINADOS))
     notificar('exito', 'Datos demostrativos restablecidos', 'Se regeneró el conjunto inicial con la fecha vigente.')
   }
 
@@ -70,11 +87,32 @@ export default function PaginaConfiguracion() {
           </AvisoDemostrativo>
         </Panel>
         <Panel titulo="Parámetros" descripcion="Valores vigentes del prototipo.">
-          <dl className="space-y-3 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt className="text-texto-secundario">Alerta de vencimiento</dt>
-              <dd className="font-medium text-texto">{datos.configuracion.diasAlertaVencimiento} días antes</dd>
-            </div>
+          <form
+            className="flex items-end gap-2"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault()
+              guardarDias()
+            }}
+          >
+            <CampoTexto
+              etiqueta="Alerta de vencimiento de cartera (días antes)"
+              type="number"
+              inputMode="numeric"
+              min={LIMITES_DIAS_ALERTA.minimo}
+              max={LIMITES_DIAS_ALERTA.maximo}
+              className="flex-1"
+              value={dias}
+              error={errorDias}
+              ayuda="Define cuándo una factura se marca como próxima a vencer."
+              onChange={(e) => {
+                establecerDias(e.target.value)
+                establecerErrorDias(undefined)
+              }}
+            />
+            <Boton type="submit" icono={Save} disabled={Number(dias) === datos.configuracion.diasAlertaVencimiento}>Guardar</Boton>
+          </form>
+          <dl className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-texto-secundario">Versión del esquema</dt>
               <dd className="font-medium text-texto">{datos.configuracion.versionEsquema}</dd>
@@ -83,8 +121,15 @@ export default function PaginaConfiguracion() {
               <dt className="text-texto-secundario">Moneda y formato</dt>
               <dd className="font-medium text-texto">USD · dd/mm/aaaa</dd>
             </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-texto-secundario">Zona horaria</dt>
+              <dd className="font-medium text-texto">Ecuador (UTC-5)</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-texto-secundario">Almacenamiento</dt>
+              <dd className="font-medium text-texto">Local en este navegador</dd>
+            </div>
           </dl>
-          <p className="mt-4 text-xs text-texto-secundario">La edición de parámetros se incorpora en la Fase 7.</p>
         </Panel>
       </div>
       <ModalConfirmacion

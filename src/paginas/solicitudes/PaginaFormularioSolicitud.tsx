@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { MODALIDADES, type Lugar } from '@/tipos/dominio'
+import { MODALIDADES } from '@/tipos/dominio'
+import { opcionesLugar } from '@/componentes/formularios/opcionesDominio'
 import { usarApp } from '@/hooks/usarApp'
 import { usarNotificaciones } from '@/hooks/usarNotificaciones'
 import { usarOperacion } from '@/hooks/usarOperacion'
@@ -20,7 +21,6 @@ import {
   ETIQUETAS_ESTADO_SOLICITUD,
   ETIQUETAS_MODALIDAD,
   ETIQUETAS_TIPO_CARGA,
-  ETIQUETAS_TIPO_LUGAR,
   opcionesDe,
   TIPO_CARGA_POR_MODALIDAD,
 } from '@/utilidades/constantes'
@@ -28,12 +28,6 @@ import { aValorFechaHoraLocal, desdeValorFechaHoraLocal } from '@/utilidades/for
 import { ESTADOS_SOLICITUD_EDITABLES, esquemaSolicitud, type EntradaSolicitud } from '@/utilidades/validadores'
 
 const ORIGEN_SUGERIDO = { importacion_contenedorizada: 'puerto', importacion_suelta: 'puerto', exportacion: 'deposito' } as const
-
-function opcionesLugar(lugares: readonly Lugar[]) {
-  return [...lugares]
-    .sort((a, b) => a.tipo.localeCompare(b.tipo) || a.nombre.localeCompare(b.nombre))
-    .map((l) => ({ valor: l.codigo, etiqueta: `${l.nombre} · ${ETIQUETAS_TIPO_LUGAR[l.tipo]}, ${l.ciudad}` }))
-}
 
 export default function PaginaFormularioSolicitud() {
   const { codigo } = useParams()
@@ -135,18 +129,18 @@ export default function PaginaFormularioSolicitud() {
         titulo={esEdicion ? `Editar solicitud ${codigo}` : 'Nueva solicitud'}
         descripcion={esEdicion ? 'Los cambios quedan registrados en la actividad.' : 'Requerimiento de transporte del cliente. El código se asigna al guardar.'}
       />
-      <Panel className="max-w-4xl">
+      <Panel>
         <form onSubmit={handleSubmit(guardar)} noValidate>
           <NotaCamposRequeridos />
-          <fieldset className="grid gap-4 sm:grid-cols-2">
+          <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <legend className="sr-only">Cliente y operación</legend>
-            <Selector etiqueta="Cliente" requerido textoTodos="Seleccione un cliente" className="sm:col-span-2" opciones={clientes.map((c) => ({ valor: c.codigo, etiqueta: `${c.razonSocial} (${c.codigo})` }))} error={errors.clienteCodigo?.message} {...register('clienteCodigo')} />
+            <Selector etiqueta="Cliente" requerido textoTodos="Seleccione un cliente" className="sm:col-span-2"opciones={clientes.map((c) => ({ valor: c.codigo, etiqueta: `${c.razonSocial} (${c.codigo})` }))} error={errors.clienteCodigo?.message} {...register('clienteCodigo')} />
             <Selector etiqueta="Tipo de operación" requerido opciones={opcionesDe(ETIQUETAS_MODALIDAD, MODALIDADES)} error={errors.modalidad?.message} {...register('modalidad')} />
             <CampoTexto etiqueta="Carga" value={ETIQUETAS_TIPO_CARGA[TIPO_CARGA_POR_MODALIDAD[modalidad]]} disabled ayuda="Se define según el tipo de operación." readOnly />
             <Selector etiqueta="Tipo de carga" requerido textoTodos="Seleccione" opciones={categorias.map((t) => ({ valor: t.codigo, etiqueta: t.nombre }))} error={errors.categoriaCargaCodigo?.message} {...register('categoriaCargaCodigo')} />
-            <CampoTexto etiqueta="Descripción de la carga" requerido placeholder="Ej.: 20 pallets de repuestos" error={errors.descripcionCarga?.message} {...register('descripcionCarga')} />
+            <CampoTexto etiqueta="Descripción de la carga" requerido placeholder="Ej.: 20 pallets de repuestos" className="lg:col-span-3" error={errors.descripcionCarga?.message} {...register('descripcionCarga')} />
           </fieldset>
-          <fieldset className="grid gap-4 sm:grid-cols-2 mt-5 pt-5 border-t border-borde">
+          <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-5 pt-5 border-t border-borde">
             <legend className="sr-only">Recorrido y fecha</legend>
             <Selector etiqueta="Origen" requerido textoTodos="Seleccione el origen" opciones={opcionesLugar(lugaresActivos)} error={errors.origenCodigo?.message} {...register('origenCodigo')} />
             <Selector etiqueta="Destino" requerido textoTodos="Seleccione el destino" opciones={opcionesLugar(lugaresActivos)} error={errors.destinoCodigo?.message} {...register('destinoCodigo')} />
