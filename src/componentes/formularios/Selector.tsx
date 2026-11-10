@@ -8,22 +8,27 @@ interface PropiedadesSelector extends Omit<SelectHTMLAttributes<HTMLSelectElemen
   textoTodos?: string
   ocultarEtiqueta?: boolean
   error?: string
+  requerido?: boolean
 }
 
 export const Selector = forwardRef<HTMLSelectElement, PropiedadesSelector>(function Selector(
-  { etiqueta, opciones, textoTodos, ocultarEtiqueta = false, error, className = '', id, ...resto },
+  { etiqueta, opciones, textoTodos, ocultarEtiqueta = false, error, requerido, className = '', id, ...resto },
   referencia,
 ) {
   const idGenerado = useId()
   const idCampo = id ?? idGenerado
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      <label htmlFor={idCampo} className={ocultarEtiqueta ? 'sr-only' : 'text-xs font-medium text-texto-secundario'}>{etiqueta}</label>
+      <label htmlFor={idCampo} className={ocultarEtiqueta ? 'sr-only' : 'text-xs font-medium text-texto-secundario'}>
+        {etiqueta}
+        {requerido && <span className="text-peligro" aria-hidden="true"> *</span>}
+      </label>
       <div className="relative">
         <select
           ref={referencia}
           id={idCampo}
           aria-invalid={error ? true : undefined}
+          aria-required={requerido || undefined}
           className={`h-9 w-full appearance-none rounded-md border bg-superficie pl-3 pr-8 text-sm text-texto ${error ? 'border-peligro' : 'border-borde'}`}
           {...resto}
         >

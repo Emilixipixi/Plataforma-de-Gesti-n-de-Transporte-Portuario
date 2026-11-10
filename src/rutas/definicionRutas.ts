@@ -1,5 +1,6 @@
 import { matchPath } from 'react-router-dom'
 import type { Accion } from '@/utilidades/permisos'
+import { CATALOGOS } from '@/utilidades/constantes'
 
 export interface DefinicionRuta {
   ruta: string
@@ -74,7 +75,9 @@ export function migasDeRuta(rutaActual: string): Miga[] {
   let actual: DefinicionRuta | undefined = encontrada.definicion
   while (actual) {
     const titulo = actual.ruta.endsWith(':codigo') && parametros.codigo ? parametros.codigo : actual.titulo
-    migas.unshift({ titulo, ruta: completarRuta(actual.ruta, parametros) })
+    migas.unshift({ titulo, ruta: actual.ruta === '/catalogos/:catalogo' ? '/catalogos' : completarRuta(actual.ruta, parametros) })
+    const catalogo = actual.ruta === '/catalogos/:catalogo' ? CATALOGOS.find((c) => c.clave === parametros.catalogo) : undefined
+    if (catalogo) migas.push({ titulo: catalogo.titulo, ruta: `/catalogos/${catalogo.clave}` })
     const padre: string | undefined = actual.padre
     actual = padre ? RUTAS.find((r) => r.ruta === padre) : undefined
   }

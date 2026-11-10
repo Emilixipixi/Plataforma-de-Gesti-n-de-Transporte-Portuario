@@ -1,6 +1,6 @@
 # PORTFLOW — Matriz de trazabilidad
 
-Actualizada al cierre de la Fase 1. La columna Fase indica cuándo queda completo cada elemento; "Parcial" significa que la lógica o los datos ya existen pero falta la pantalla de su fase. La validación completa se hace en la Fase 8.
+Actualizada al cierre de la Fase 2. La columna Fase indica cuándo queda completo cada elemento; "Parcial" significa que la lógica o los datos ya existen pero falta la pantalla de su fase. La validación completa se hace en la Fase 8.
 
 Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
@@ -8,14 +8,14 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
 | ID | Requerimiento | Fase | Dónde se implementa | Estado |
 |---|---|---|---|---|
-| RF-01 | Ficha de cliente | 2 | P-03, paginas/clientes | Pendiente |
-| RF-02 | Consulta de clientes y operaciones asociadas | 2 | P-03, busqueda y ficha | Pendiente |
-| RF-03 | Requerimiento de transporte por cliente | 2 | P-04 | Pendiente |
-| RF-04 | Varias solicitudes y viajes abiertos por cliente | 3 | P-05, P-06, datos IMP-001 e IMP-005 | Pendiente |
-| RF-05 | Fecha requerida, origen, destino, indicaciones | 2 | P-04 | Pendiente |
-| RF-06 | Convertir solicitud aceptada en operación | 2 | operaciones/convertirSolicitud | Pendiente |
-| RF-07 | Bandeja de solicitudes con filtros | 2 | P-05 | Pendiente |
-| RF-08 | Catálogos de transportistas, choferes y unidades | 2 | P-17 | Pendiente |
+| RF-01 | Ficha de cliente | 2 | P-03: PaginaFormularioCliente, PaginaFichaCliente, operaciones/clientes | Implementado |
+| RF-02 | Consulta de clientes y operaciones asociadas | 2 | P-03: búsqueda por nombre, código e identificación; ficha con solicitudes, viajes, servicios y documentos | Implementado |
+| RF-03 | Requerimiento de transporte por cliente | 2 | P-04: PaginaFormularioSolicitud, operaciones/solicitudes | Implementado |
+| RF-04 | Varias solicitudes y viajes abiertos por cliente | 3 | P-03 (ficha con viajes abiertos), P-05; programación en Fase 3 | Parcial |
+| RF-05 | Fecha requerida, origen, destino, indicaciones | 2 | P-04 | Implementado |
+| RF-06 | Convertir solicitud aceptada en operación | 2 | operaciones/solicitudes.convertirSolicitud, ModalConversionSolicitud | Implementado |
+| RF-07 | Bandeja de solicitudes con filtros | 2 | P-05: filtros por cliente, fecha, tipo y estado en la URL | Implementado |
+| RF-08 | Catálogos de transportistas, choferes y unidades | 2 | P-17: PanelCatalogo, operaciones/catalogos | Implementado |
 | RF-09 | Tipo de carga y contenedor | 3 | P-07, carga.contenedor | Pendiente |
 | RF-10 | Asignar transportista, chofer, vehículo y ruta | 3 | P-07, operaciones/asignarRecursos | Pendiente |
 | RF-11 | Fechas previstas de salida, llegada y cierre | 3 | P-07 | Pendiente |
@@ -30,7 +30,7 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | RF-20 | Distinguir en ejecución, pendiente de devolución y cerrado | 4 | P-08, P-02 | Pendiente |
 | RF-21 | Detalle de operación | 3 | P-08 | Pendiente |
 | RF-22 | Eventos manuales en línea de tiempo | 4 | P-09, P-10 | Pendiente |
-| RF-23 | Hitos predefinidos adaptados a la modalidad | 4 | tiposEvento, secuenciaDeHitos | Pendiente |
+| RF-23 | Hitos predefinidos adaptados a la modalidad | 4 | P-17: catálogo de tipos de evento con secuencia por modalidad; registro en Fase 4 | Parcial |
 | RF-24 | Paradas, esperas, demoras, incidentes y cambios de ruta | 4 | P-10 | Pendiente |
 | RF-25 | Evidencias en eventos e incidencias | 4 | P-10 | Pendiente |
 | RF-26 | Estado actual, último evento y responsable | 4 | P-08 | Pendiente |
@@ -60,18 +60,18 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | RF-50 | Abonos, pagos parciales y cancelación total | 6 | P-16, operaciones/registrarPago y validarPago | Pendiente |
 | RF-51 | Alertas de cartera próxima a vencer o vencida | 6 | calculos/esProximaAVencer; panel de notificaciones del encabezado (P-16 en Fase 6) | Parcial |
 | RF-52 | Consulta futura de cartera desde Contífico y estado de sincronización | 7 | P-20 | Pendiente |
-| RF-53 | Catálogos editables | 2 | P-17 | Pendiente |
+| RF-53 | Catálogos editables | 2 | P-17: listar, buscar, crear, editar, activar y desactivar en 7 catálogos; clientes en P-03 | Implementado |
 | RF-54 | Identificador de viaje único en todas las vistas | 1 | calculos/siguienteCodigo, generadorDatos (IMP-xxx / EXP-xxx) | Implementado |
 | RF-55 | Búsqueda global por código, cliente, contenedor o placa | 3 | maquetacion/BusquedaGlobal, servicios/busqueda (el detalle de destino llega en Fase 3) | Parcial |
 | RF-56 | Importación desde Excel con vista previa | 7 | P-18 | Pendiente |
-| RF-57 | Registro de actividad | 7 | servicios/actividad y ContextoApp.aplicar registran cada acción; pantalla P-19 en Fase 7 | Parcial |
+| RF-57 | Registro de actividad | 7 | servicios/actividad y ContextoApp.aplicar registran creación, edición, conversión, activación y desactivación; pantalla P-19 en Fase 7 | Parcial |
 | RF-58 | Menú diferenciado por perfil | 1 | maquetacion/BarraLateral y menu, utilidades/permisos, rutas/RutaProtegida | Implementado |
 
 ## Reglas de negocio
 
 | ID | Regla | Fase | Dónde se implementa | Estado |
 |---|---|---|---|---|
-| RN-01 | El viaje es la unidad central | 3 | modelo Viaje | Pendiente |
+| RN-01 | El viaje es la unidad central | 3 | modelo Viaje vinculado a solicitud y cliente (conversión) | Parcial |
 | RN-02 | Varias operaciones por cliente sin mezclar bitácoras | 3 | eventos y documentos por viajeCodigo | Pendiente |
 | RN-03 | Contenedorizada se cierra tras la devolución | 4 | calculos/puedeFinalizar | Parcial |
 | RN-04 | Carga suelta se cierra con la entrega confirmada | 4 | calculos/puedeFinalizar | Parcial |
@@ -113,9 +113,9 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
 | ID | Recorrido | Fase en que queda completo | Pantallas | Estado |
 |---|---|---|---|---|
-| F-01 | Importación contenedorizada | 4 | P-04 a P-10 | Pendiente |
-| F-02 | Importación de carga suelta | 4 | P-04 a P-10 | Pendiente |
-| F-03 | Exportación | 4 | P-04 a P-10 | Pendiente |
+| F-01 | Importación contenedorizada | 4 | P-03 a P-05 listos (cliente, solicitud, conversión); P-06 a P-10 pendientes | Parcial |
+| F-02 | Importación de carga suelta | 4 | P-04 y P-05 listos; P-06 a P-10 pendientes | Parcial |
+| F-03 | Exportación | 4 | P-04 y P-05 listos (solicitud de retiro de contenedor); P-06 a P-10 pendientes | Parcial |
 | F-04 | Incidencia y retraso | 5 | P-08 a P-10, P-12 | Pendiente |
 | F-05 | Reporte para cliente | 5 | P-13 | Pendiente |
 | F-06 | Guía de remisión | 5 | P-11 | Pendiente |
@@ -128,9 +128,9 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 |---|---|---|---|
 | P-01 | Acceso y selección de perfil | 1 | Implementado |
 | P-02 | Dashboard operativo (y contable en Fase 6) | 4 | Pendiente |
-| P-03 | Clientes | 2 | Pendiente |
-| P-04 | Nueva solicitud | 2 | Pendiente |
-| P-05 | Solicitudes | 2 | Pendiente |
+| P-03 | Clientes | 2 | Implementado |
+| P-04 | Nueva solicitud | 2 | Implementado |
+| P-05 | Solicitudes | 2 | Implementado |
 | P-06 | Programación de viajes | 3 | Pendiente |
 | P-07 | Crear y editar viaje | 3 | Pendiente |
 | P-08 | Detalle de viaje | 3 | Pendiente |
@@ -142,7 +142,7 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | P-14 | Bandeja por facturar | 6 | Pendiente |
 | P-15 | Facturas y servicios agrupados | 6 | Pendiente |
 | P-16 | Cartera y pagos | 6 | Pendiente |
-| P-17 | Catálogos | 2 | Pendiente |
+| P-17 | Catálogos | 2 | Implementado |
 | P-18 | Importar Excel | 7 | Pendiente |
 | P-19 | Actividad e historial | 7 | Pendiente |
 | P-20 | Integraciones | 7 | Pendiente |
@@ -156,3 +156,12 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | Generador con fechas relativas, 14 viajes y escenarios A a E | datos/generadorDatos.ts | Implementado |
 | Componentes comunes: botones, insignias, tabla con orden y paginación, modales, notificaciones | componentes/ | Implementado |
 | Rutas protegidas con redirección y aviso | rutas/RutaProtegida.tsx | Implementado |
+
+## Decisiones de la Fase 2
+
+| Decisión | Motivo |
+|---|---|
+| Clientes y elementos de catálogo se desactivan, no se eliminan | Conservan viajes, documentos e historial; dejan de ofrecerse en formularios nuevos |
+| Los 12 hitos base son hitos del sistema: solo se edita su nombre | Definen la secuencia y el cierre por modalidad (RN-03 a RN-05); los eventos adicionales sí son configurables |
+| Campos opcionales nuevos: tipo de carga del catálogo (solicitud y carga) y motivo de rechazo | El catálogo de tipos de carga debe alimentar los formularios; el rechazo queda documentado |
+| El viaje convertido nace con cobro contra factura y valor $0.00 | La solicitud no contiene esos datos; se completan en P-07 (Fase 3) |

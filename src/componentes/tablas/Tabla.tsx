@@ -12,6 +12,7 @@ export interface Columna<T> {
   alinear?: 'izquierda' | 'derecha' | 'centro'
   ancho?: string
   ocultarEnMovil?: boolean
+  visibleDesde?: 'md' | 'lg' | 'xl' | '2xl'
 }
 
 interface PropiedadesTabla<T> {
@@ -28,6 +29,13 @@ interface PropiedadesTabla<T> {
 }
 
 const ALINEACION = { izquierda: 'text-left', derecha: 'text-right', centro: 'text-center' } as const
+
+const VISIBILIDAD = { md: 'hidden md:table-cell', lg: 'hidden lg:table-cell', xl: 'hidden xl:table-cell', '2xl': 'hidden 2xl:table-cell' } as const
+
+function claseVisibilidad<T>(columna: Columna<T>): string {
+  if (columna.visibleDesde) return VISIBILIDAD[columna.visibleDesde]
+  return columna.ocultarEnMovil ? VISIBILIDAD.md : ''
+}
 
 function comparar(a: string | number | undefined, b: string | number | undefined): number {
   if (a === undefined && b === undefined) return 0
@@ -82,7 +90,7 @@ export function Tabla<T>({
                     scope="col"
                     style={columna.ancho ? { width: columna.ancho } : undefined}
                     aria-sort={activa ? (direccion === 'asc' ? 'ascending' : 'descending') : undefined}
-                    className={`px-4 py-2.5 font-medium text-xs uppercase tracking-wide whitespace-nowrap ${ALINEACION[columna.alinear ?? 'izquierda']} ${columna.ocultarEnMovil ? 'hidden md:table-cell' : ''}`}
+                    className={`px-4 py-2.5 font-medium text-xs uppercase tracking-wide whitespace-nowrap ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}
                   >
                     {columna.valorOrden ? (
                       <button type="button" onClick={() => alternarOrden(columna.clave)} className={`inline-flex items-center gap-1 uppercase hover:text-texto ${activa ? 'text-texto' : ''}`}>
@@ -106,7 +114,7 @@ export function Tabla<T>({
                 className={`${onFila ? 'cursor-pointer hover:bg-fondo' : ''} ${resaltarFila?.(fila) ? 'bg-peligro-fondo/40' : ''}`}
               >
                 {columnas.map((columna) => (
-                  <td key={columna.clave} className={`px-4 py-3 align-middle ${ALINEACION[columna.alinear ?? 'izquierda']} ${columna.ocultarEnMovil ? 'hidden md:table-cell' : ''}`}>
+                  <td key={columna.clave} className={`px-4 py-3 align-middle ${ALINEACION[columna.alinear ?? 'izquierda']} ${claseVisibilidad(columna)}`}>
                     {columna.celda(fila)}
                   </td>
                 ))}

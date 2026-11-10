@@ -174,6 +174,7 @@ export interface Solicitud {
   clienteCodigo: string
   modalidad: Modalidad
   tipoCarga: TipoCarga
+  categoriaCargaCodigo?: string
   descripcionCarga: string
   origenCodigo: string
   destinoCodigo: string
@@ -181,6 +182,7 @@ export interface Solicitud {
   indicacionesCliente: string
   observaciones: string
   estado: EstadoSolicitud
+  motivoRechazo?: string
   viajeCodigo?: string
   fechaCreacion: string
   creadoPor: string
@@ -193,6 +195,7 @@ export interface Contenedor {
 
 export interface Carga {
   tipo: TipoCarga
+  categoriaCodigo?: string
   descripcion: string
   observaciones: string
   contenedor?: Contenedor

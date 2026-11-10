@@ -389,3 +389,18 @@ export function opcionesDe<T extends string>(etiquetas: Record<T, string>, orden
   const valores = orden ?? (Object.keys(etiquetas) as T[])
   return valores.map((valor) => ({ valor, etiqueta: etiquetas[valor] }))
 }
+
+export const CATALOGOS = [
+  { clave: 'transportistas', titulo: 'Transportistas', singular: 'transportista' },
+  { clave: 'choferes', titulo: 'Choferes', singular: 'chofer' },
+  { clave: 'unidades', titulo: 'Unidades', singular: 'unidad' },
+  { clave: 'lugares', titulo: 'Lugares', singular: 'lugar' },
+  { clave: 'tipos-carga', titulo: 'Tipos de carga', singular: 'tipo de carga' },
+  { clave: 'tipos-evento', titulo: 'Tipos de evento e hitos', singular: 'tipo de evento' },
+  { clave: 'tipos-incidencia', titulo: 'Tipos de incidencia', singular: 'tipo de incidencia' },
+] as const
+export type ClaveCatalogo = (typeof CATALOGOS)[number]['clave']
+
+export function esHitoDelSistema(codigo: string): boolean {
+  return (Object.values(HITOS) as string[]).includes(codigo)
+}
