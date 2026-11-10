@@ -1,5 +1,7 @@
 import type {
+  AccionActividad,
   DisponibilidadChofer,
+  Entidad,
   DisponibilidadUnidad,
   EstadoCatalogo,
   EstadoFactura,
@@ -30,6 +32,10 @@ export const DIAS_ALERTA_VENCIMIENTO_PREDETERMINADOS = 7
 export const ZONA_HORARIA = 'America/Guayaquil'
 export const LOCALE = 'es-EC'
 export const MONEDA = 'USD'
+
+export const EMPRESA_OPERADORA = 'Operador de Transporte Portuario (demostrativo)'
+export const RUC_EMPRESA_OPERADORA = '0999999999001'
+export const OFFSET_ECUADOR_HORAS = -5
 
 export const LEYENDA_GUIA_DEMOSTRATIVA =
   'Documento demostrativo de transporte. No constituye un documento tributario autorizado.'
@@ -340,6 +346,41 @@ export const CATALOGO_TIPOS_CARGA_BASE: readonly TipoCatalogo[] = [
   { codigo: 'TCA-005', nombre: 'Materiales de construcción', estado: 'activo' },
   { codigo: 'TCA-006', nombre: 'Productos de consumo masivo', estado: 'activo' },
 ]
+
+export const ETIQUETAS_ACCION_ACTIVIDAD: Record<AccionActividad, string> = {
+  creacion: 'Creación',
+  edicion: 'Edición',
+  conversion: 'Conversión',
+  asignacion: 'Asignación',
+  cambio_programacion: 'Cambio de programación',
+  cambio_estado: 'Cambio de estado',
+  evento: 'Evento',
+  incidencia: 'Incidencia',
+  resolucion_incidencia: 'Resolución de incidencia',
+  documento: 'Documento',
+  factura: 'Factura',
+  pago: 'Pago',
+  validacion_pago: 'Validación de pago',
+  cancelacion: 'Cancelación',
+  finalizacion: 'Finalización',
+  activacion: 'Activación',
+  desactivacion: 'Desactivación',
+  importacion: 'Importación',
+  restablecimiento: 'Restablecimiento',
+}
+
+export const ETIQUETAS_ENTIDAD: Record<Entidad, string> = {
+  cliente: 'Cliente',
+  solicitud: 'Solicitud',
+  viaje: 'Viaje',
+  evento: 'Evento',
+  incidencia: 'Incidencia',
+  documento: 'Documento',
+  factura: 'Factura',
+  pago: 'Pago',
+  catalogo: 'Catálogo',
+  sistema: 'Sistema',
+}
 
 export const TAMANOS_PAGINA = [10, 20, 50] as const
 export const TAMANO_PAGINA_PREDETERMINADO = 10

@@ -63,6 +63,43 @@ export type EstadoServicio = (typeof ESTADOS_SERVICIO)[number]
 export const ESTADOS_FACTURA = ['pendiente_parcial', 'vencida', 'cobrada'] as const
 export type EstadoFactura = (typeof ESTADOS_FACTURA)[number]
 
+export const ACCIONES_ACTIVIDAD = [
+  'creacion',
+  'edicion',
+  'conversion',
+  'asignacion',
+  'cambio_programacion',
+  'cambio_estado',
+  'evento',
+  'incidencia',
+  'resolucion_incidencia',
+  'documento',
+  'factura',
+  'pago',
+  'validacion_pago',
+  'cancelacion',
+  'finalizacion',
+  'activacion',
+  'desactivacion',
+  'importacion',
+  'restablecimiento',
+] as const
+export type AccionActividad = (typeof ACCIONES_ACTIVIDAD)[number]
+
+export const ENTIDADES = [
+  'cliente',
+  'solicitud',
+  'viaje',
+  'evento',
+  'incidencia',
+  'documento',
+  'factura',
+  'pago',
+  'catalogo',
+  'sistema',
+] as const
+export type Entidad = (typeof ENTIDADES)[number]
+
 export interface Usuario {
   codigo: string
   nombre: string
@@ -296,8 +333,8 @@ export interface Actividad {
   codigo: string
   usuarioCodigo: string
   fechaHora: string
-  accion: string
-  entidad: string
+  accion: AccionActividad
+  entidad: Entidad
   codigoEntidad: string
   descripcion: string
 }
