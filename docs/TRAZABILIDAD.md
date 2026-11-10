@@ -1,6 +1,6 @@
 # PORTFLOW — Matriz de trazabilidad
 
-Estado inicial al cierre de la Fase 0. Todos los elementos están pendientes; la columna Fase indica cuándo se implementa. La validación completa se hace en la Fase 8.
+Actualizada al cierre de la Fase 1. La columna Fase indica cuándo queda completo cada elemento; "Parcial" significa que la lógica o los datos ya existen pero falta la pantalla de su fase. La validación completa se hace en la Fase 8.
 
 Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
@@ -20,12 +20,12 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | RF-10 | Asignar transportista, chofer, vehículo y ruta | 3 | P-07, operaciones/asignarRecursos | Pendiente |
 | RF-11 | Fechas previstas de salida, llegada y cierre | 3 | P-07 | Pendiente |
 | RF-12 | Programación en lista o calendario y pendientes de asignación | 3 | P-06 | Pendiente |
-| RF-13 | Aviso de solapamiento de unidad o chofer | 3 | calculos/hayAdvertenciaSolapamiento | Pendiente |
+| RF-13 | Aviso de solapamiento de unidad o chofer | 3 | calculos/hayAdvertenciaSolapamiento (cálculo listo; aviso en P-07 en Fase 3) | Parcial |
 | RF-14 | Modificar programación con motivo y fecha | 3 | operaciones/ajustarProgramacion | Pendiente |
 | RF-15 | Viaje de importación contenedorizada | 3 | P-07, P-08 | Pendiente |
 | RF-16 | Viaje de importación de carga suelta | 3 | P-07, P-08 | Pendiente |
 | RF-17 | Viaje de exportación | 3 | P-07, P-08 | Pendiente |
-| RF-18 | Secuencia de etapas por modalidad | 3 | calculos/secuenciaDeHitos | Pendiente |
+| RF-18 | Secuencia de etapas por modalidad | 3 | constantes/SECUENCIA_HITOS, calculos/secuenciaDeHitos | Parcial |
 | RF-19 | Etapa con ubicación, evento y horas prevista y real | 4 | P-09 | Pendiente |
 | RF-20 | Distinguir en ejecución, pendiente de devolución y cerrado | 4 | P-08, P-02 | Pendiente |
 | RF-21 | Detalle de operación | 3 | P-08 | Pendiente |
@@ -51,21 +51,21 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | RF-41 | Previsto contra efectivo y observaciones de retraso | 5 | P-12, P-13 | Pendiente |
 | RF-42 | Exportación a PDF y Excel | 5 | servicios/exportacion | Pendiente |
 | RF-43 | Vista interna y versión para el cliente | 5 | P-12, P-13 | Pendiente |
-| RF-44 | Operaciones finalizadas elegibles para facturar | 6 | calculos/estadoFacturacionServicio | Pendiente |
+| RF-44 | Operaciones finalizadas elegibles para facturar | 6 | calculos/estadoFacturacionServicio; alerta en notificaciones de Contabilidad | Parcial |
 | RF-45 | Bandeja restringida para Contabilidad | 6 | P-14 | Pendiente |
 | RF-46 | Agrupar servicios de un cliente | 6 | P-14, operaciones/agruparYFacturar | Pendiente |
 | RF-47 | Registrar referencia, fecha y valor de factura | 6 | P-15 | Pendiente |
 | RF-48 | Contra factura y a crédito, sin anticipo | 6 | modalidadCobro, P-07, P-15 | Pendiente |
 | RF-49 | Vencimiento, saldo y estado de cartera | 6 | P-16 | Pendiente |
 | RF-50 | Abonos, pagos parciales y cancelación total | 6 | P-16, operaciones/registrarPago y validarPago | Pendiente |
-| RF-51 | Alertas de cartera próxima a vencer o vencida | 6 | P-16, calculos/esProximaAVencer | Pendiente |
+| RF-51 | Alertas de cartera próxima a vencer o vencida | 6 | calculos/esProximaAVencer; panel de notificaciones del encabezado (P-16 en Fase 6) | Parcial |
 | RF-52 | Consulta futura de cartera desde Contífico y estado de sincronización | 7 | P-20 | Pendiente |
 | RF-53 | Catálogos editables | 2 | P-17 | Pendiente |
-| RF-54 | Identificador de viaje único en todas las vistas | 1 | calculos/siguienteCodigo, generadorDatos | Pendiente |
-| RF-55 | Búsqueda global por código, cliente, contenedor o placa | 3 | encabezado, servicios/busqueda | Pendiente |
+| RF-54 | Identificador de viaje único en todas las vistas | 1 | calculos/siguienteCodigo, generadorDatos (IMP-xxx / EXP-xxx) | Implementado |
+| RF-55 | Búsqueda global por código, cliente, contenedor o placa | 3 | maquetacion/BusquedaGlobal, servicios/busqueda (el detalle de destino llega en Fase 3) | Parcial |
 | RF-56 | Importación desde Excel con vista previa | 7 | P-18 | Pendiente |
-| RF-57 | Registro de actividad | 7 | P-19, servicios/actividad (registro desde Fase 1) | Pendiente |
-| RF-58 | Menú diferenciado por perfil | 1 | maquetacion, utilidades/permisos | Pendiente |
+| RF-57 | Registro de actividad | 7 | servicios/actividad y ContextoApp.aplicar registran cada acción; pantalla P-19 en Fase 7 | Parcial |
+| RF-58 | Menú diferenciado por perfil | 1 | maquetacion/BarraLateral y menu, utilidades/permisos, rutas/RutaProtegida | Implementado |
 
 ## Reglas de negocio
 
@@ -73,16 +73,16 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 |---|---|---|---|---|
 | RN-01 | El viaje es la unidad central | 3 | modelo Viaje | Pendiente |
 | RN-02 | Varias operaciones por cliente sin mezclar bitácoras | 3 | eventos y documentos por viajeCodigo | Pendiente |
-| RN-03 | Contenedorizada se cierra tras la devolución | 4 | puedeFinalizar | Pendiente |
-| RN-04 | Carga suelta se cierra con la entrega confirmada | 4 | puedeFinalizar | Pendiente |
-| RN-05 | Exportación se cierra con entrega en puerto | 4 | puedeFinalizar | Pendiente |
+| RN-03 | Contenedorizada se cierra tras la devolución | 4 | calculos/puedeFinalizar | Parcial |
+| RN-04 | Carga suelta se cierra con la entrega confirmada | 4 | calculos/puedeFinalizar | Parcial |
+| RN-05 | Exportación se cierra con entrega en puerto | 4 | calculos/puedeFinalizar | Parcial |
 | RN-06 | Monitoreo manual, sin GPS | 4 | P-09, P-20 | Pendiente |
 | RN-07 | Evento con fecha, hora, responsable y detalle, en orden cronológico | 4 | P-09 | Pendiente |
-| RN-08 | Retraso contra compromiso registrado | 4 | calculos/estaARetrasado | Pendiente |
-| RN-09 | La incidencia no bloquea el cierre; debe resolverse o documentarse | 4 | puedeFinalizar | Pendiente |
+| RN-08 | Retraso contra compromiso registrado | 4 | calculos/estaRetrasado y desvioEnMinutos | Parcial |
+| RN-09 | La incidencia no bloquea el cierre; debe resolverse o documentarse | 4 | calculos/puedeFinalizar (exige observación con incidencias abiertas) | Parcial |
 | RN-10 | Contabilidad recibe servicios elegibles y los agrupa por cliente | 6 | P-14 | Pendiente |
-| RN-11 | Pago contra factura o crédito, sin validar anticipo | 6 | modalidadCobro | Pendiente |
-| RN-12 | Pago parcial reduce saldo; cobrado solo con saldo cero | 6 | calculos/saldoDeFactura | Pendiente |
+| RN-11 | Pago contra factura o crédito, sin validar anticipo | 6 | modelo modalidadCobro; datos con ambas modalidades | Parcial |
+| RN-12 | Pago parcial reduce saldo; cobrado solo con saldo cero | 6 | calculos/saldoDeFactura y estadoDeFactura | Parcial |
 | RN-13 | Cartera y pagos fuera de reportes compartibles | 5 | P-13 | Pendiente |
 | RN-14 | Mismo código de viaje y cliente en documentos y reportes | 5 | P-11, P-12, P-13 | Pendiente |
 | RN-15 | Guía demostrativa, no tributaria | 5 | P-11, leyenda en la guía | Pendiente |
@@ -91,8 +91,8 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
 | ID | Criterio | Fase | Dónde se implementa | Estado |
 |---|---|---|---|---|
-| CA-01 | Navegar del panel a un viaje y volver sin perder contexto | 3 | filtros en la URL | Pendiente |
-| CA-02 | Cliente con al menos dos viajes simultáneos independientes | 3 | IMP-001 e IMP-005 | Pendiente |
+| CA-01 | Navegar del panel a un viaje y volver sin perder contexto | 3 | hooks/usarParametrosListado (filtros, orden y página en la URL); retorno tras el acceso | Parcial |
+| CA-02 | Cliente con al menos dos viajes simultáneos independientes | 3 | datos: CLI-002 con IMP-003 y EXP-001 abiertos a la vez | Parcial |
 | CA-03 | Importación contenedorizada exige devolución | 4 | secuenciaDeHitos | Pendiente |
 | CA-04 | Carga suelta sin devolución; exportación finaliza en puerto | 4 | secuenciaDeHitos | Pendiente |
 | CA-05 | Actualizar estado y eventos con hora y responsable | 4 | P-08, P-09 | Pendiente |
@@ -107,7 +107,7 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | CA-14 | Viaje sin pago anticipado, contra factura o a crédito | 6 | modalidadCobro | Pendiente |
 | CA-15 | Contífico y Tracklink como integraciones futuras | 7 | P-20 | Pendiente |
 | CA-16 | Importación desde Excel con mapeo y vista previa | 7 | P-18 | Pendiente |
-| CA-17 | Navegación adaptativa en escritorio y teléfono | 1 | maquetacion; se valida en Fase 8 | Pendiente |
+| CA-17 | Navegación adaptativa en escritorio y teléfono | 1 | maquetacion (menú lateral desplegable en móvil, tablas con desplazamiento); se valida en Fase 8 | Parcial |
 
 ## Recorridos de demostración
 
@@ -126,7 +126,7 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 
 | ID | Pantalla | Fase | Estado |
 |---|---|---|---|
-| P-01 | Acceso y selección de perfil | 1 | Pendiente |
+| P-01 | Acceso y selección de perfil | 1 | Implementado |
 | P-02 | Dashboard operativo (y contable en Fase 6) | 4 | Pendiente |
 | P-03 | Clientes | 2 | Pendiente |
 | P-04 | Nueva solicitud | 2 | Pendiente |
@@ -146,3 +146,13 @@ Valores de estado: Pendiente, Implementado, Parcial, Demostrativo.
 | P-18 | Importar Excel | 7 | Pendiente |
 | P-19 | Actividad e historial | 7 | Pendiente |
 | P-20 | Integraciones | 7 | Pendiente |
+
+## Base técnica de la Fase 1
+
+| Elemento | Dónde | Estado |
+|---|---|---|
+| Persistencia versionada `portflow:v1` con reinicio por versión | servicios/almacenamiento.ts | Implementado |
+| Restablecer datos demostrativos con confirmación | paginas/configuracion, ContextoApp.restablecer | Implementado |
+| Generador con fechas relativas, 14 viajes y escenarios A a E | datos/generadorDatos.ts | Implementado |
+| Componentes comunes: botones, insignias, tabla con orden y paginación, modales, notificaciones | componentes/ | Implementado |
+| Rutas protegidas con redirección y aviso | rutas/RutaProtegida.tsx | Implementado |

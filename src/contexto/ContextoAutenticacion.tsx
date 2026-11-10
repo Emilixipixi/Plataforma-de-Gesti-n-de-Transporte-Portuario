@@ -9,7 +9,7 @@ export interface ValorContextoAutenticacion {
   usuario: Usuario | null
   perfil: Perfil | null
   usuariosDelPerfil: Usuario[]
-  iniciarSesion: (perfil: Perfil) => void
+  iniciarSesion: (perfil: Perfil, usuarioCodigo?: string) => void
   cambiarUsuario: (usuarioCodigo: string) => void
   cerrarSesion: () => void
   puede: (accion: Accion) => boolean
@@ -38,8 +38,10 @@ export function ProveedorAutenticacion({ children }: { children: ReactNode }) {
   )
 
   const iniciarSesion = useCallback(
-    (perfilElegido: Perfil) => {
-      const primero = usuariosActivos.find((u) => u.perfil === perfilElegido)
+    (perfilElegido: Perfil, usuarioCodigo?: string) => {
+      const primero =
+        usuariosActivos.find((u) => u.perfil === perfilElegido && u.codigo === usuarioCodigo) ??
+        usuariosActivos.find((u) => u.perfil === perfilElegido)
       if (!primero) return
       const nueva: Sesion = { perfil: perfilElegido, usuarioCodigo: primero.codigo }
       guardarSesion(nueva)

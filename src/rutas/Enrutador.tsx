@@ -4,10 +4,15 @@ import Maquetacion from '@/componentes/maquetacion/Maquetacion'
 import PaginaAcceso from '@/paginas/acceso/PaginaAcceso'
 import PaginaNoEncontrada from '@/paginas/PaginaNoEncontrada'
 import PaginaPendiente from '@/paginas/PaginaPendiente'
+import PaginaDashboard from '@/paginas/dashboard/PaginaDashboard'
+import PaginaConfiguracion from '@/paginas/configuracion/PaginaConfiguracion'
 import { RutaProtegida } from '@/rutas/RutaProtegida'
 import { CATALOGO_PREDETERMINADO, RUTA_ACCESO, RUTA_INICIO, RUTAS } from '@/rutas/definicionRutas'
 
-const PAGINAS: Partial<Record<string, ComponentType>> = {}
+const PAGINAS: Partial<Record<string, ComponentType>> = {
+  '/dashboard': PaginaDashboard,
+  '/configuracion': PaginaConfiguracion,
+}
 
 const rutasInternas: RouteObject[] = RUTAS.map((definicion) => {
   const Pagina = PAGINAS[definicion.ruta] ?? PaginaPendiente

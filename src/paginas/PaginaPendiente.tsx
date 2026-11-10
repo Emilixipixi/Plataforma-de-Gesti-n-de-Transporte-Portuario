@@ -1,26 +1,23 @@
 import { Construction } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { buscarDefinicion } from '@/rutas/definicionRutas'
+import { EncabezadoPagina } from '@/componentes/comunes/EncabezadoPagina'
+import { EstadoVacio } from '@/componentes/comunes/EstadoVacio'
 
 export default function PaginaPendiente() {
   const { pathname } = useLocation()
-  const encontrada = buscarDefinicion(pathname)
-  const definicion = encontrada?.definicion
+  const definicion = buscarDefinicion(pathname)?.definicion
 
   return (
-    <section className="bg-superficie border border-borde rounded-lg p-6 max-w-2xl">
-      <div className="flex items-start gap-3">
-        <Construction className="size-5 text-texto-secundario mt-0.5 shrink-0" aria-hidden="true" />
-        <div>
-          <h1 className="text-lg font-semibold">{definicion?.titulo ?? 'Pantalla'}</h1>
-          <p className="text-sm text-texto-secundario mt-1">{definicion?.descripcion}</p>
-          <p className="mt-4 text-sm bg-info-fondo text-info rounded-md px-3 py-2">
-            {definicion
-              ? `Pantalla ${definicion.pantalla}. Se implementa en la Fase ${definicion.fase} del prototipo.`
-              : 'Pantalla en construcción.'}
-          </p>
-        </div>
+    <>
+      <EncabezadoPagina titulo={definicion?.titulo ?? 'Pantalla'} descripcion={definicion?.descripcion} />
+      <div className="bg-superficie border border-borde rounded-lg">
+        <EstadoVacio
+          icono={Construction}
+          titulo={definicion ? `Pantalla ${definicion.pantalla} en construcción` : 'Pantalla en construcción'}
+          descripcion={definicion ? `Esta pantalla se implementa en la Fase ${definicion.fase} del prototipo.` : undefined}
+        />
       </div>
-    </section>
+    </>
   )
 }
